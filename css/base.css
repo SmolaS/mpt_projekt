@@ -1,0 +1,411 @@
+/* ==========================================================================
+   TRACKUJEMY STOŁY & STOLIK-AI — GOOGLE STITCH DESIGN SYSTEM
+   "Atelier Culinaire & Live Vision" (100% Offline, Zero External Requests)
+   Plik: css/base.css — Zmienne, reset, nagłówek SPA, przyciski i stopka
+   ========================================================================== */
+
+:root {
+  /* Stitch Surface Hierarchy (Warm Linen & Alabaster) */
+  --surface: #fff8f3;
+  --surface-dim: #e4d9d0;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f9f2ed;
+  --surface-container: #f3ede7;
+  --surface-container-high: #ede7e2;
+  --surface-container-highest: #e7e1dc;
+
+  /* Stitch Editorial Ink & Walnut Charcoal */
+  --on-surface: #1d1b18;
+  --on-surface-variant: #56423d;
+  --text-main: #1d1b18;
+  --text-muted: #56423d;
+  --outline: #89726c;
+  --outline-variant: #dcc1b9;
+  --border-color: #e4d5ce;
+
+  /* Stitch Primary (Terracotta Cotto) */
+  --primary: #833116;
+  --primary-container: #a2482b;
+  --primary-hover: #6c250e;
+  --primary-fixed: #ffdbd0;
+  --primary-light: #fff0eb;
+  --on-primary: #ffffff;
+
+  /* Stitch Secondary (Warm Honey Amber) */
+  --secondary: #835418;
+  --secondary-container: #fdbd77;
+  --secondary-fixed: #ffdcbb;
+
+  /* Stitch Semantic Telemetry (YOLO Statuses) */
+  --free-bg: #dcfce7;
+  --free-border: #15803d;
+  --free-text: #0c2010;
+  --tertiary: #3b503d;
+  --tertiary-fixed: #d1e9cf;
+
+  --reserved-bg: #fef3c7;
+  --reserved-border: #d97706;
+  --reserved-text: #78350f;
+
+  --occupied-bg: #ffe4e6;
+  --occupied-border: #be123c;
+  --occupied-text: #881337;
+
+  --dirty-bg: #ffedd5;
+  --dirty-border: #9a6b2f;
+  --dirty-text: #7c2d12;
+
+  --disabled-bg: #e7e1dc;
+  --disabled-border: #89726c;
+  --disabled-text: #56423d;
+
+  /* Typography (Editorial Serif + Geometric Sans + Monospace Telemetry) */
+  --font-headline: Georgia, "Times New Roman", Times, serif;
+  --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Radii & Ambient Shadows */
+  --radius-xl: 20px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 4px 16px -2px rgba(29, 27, 24, 0.05);
+  --shadow-md: 0 12px 32px -4px rgba(29, 27, 24, 0.08);
+  --shadow-lg: 0 20px 44px -8px rgba(29, 27, 24, 0.12);
+}
+
+/* Subtelne akcenty kolorystyczne dla poszczególnych restauracji przy zachowaniu systemu Stitch */
+body[data-theme="bistro-agh"] {
+  --primary: #833116;
+  --primary-container: #a2482b;
+  --primary-hover: #68230c;
+  --primary-light: #ffede6;
+}
+
+body[data-theme="trattoria-roma"] {
+  --primary: #991b1b;
+  --primary-container: #b91c1c;
+  --primary-hover: #7f1d1d;
+  --primary-light: #fef2f2;
+}
+
+body[data-theme="sushi-zen"] {
+  --primary: #9f1239;
+  --primary-container: #be123c;
+  --primary-hover: #881337;
+  --primary-light: #fff1f2;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--surface);
+  color: var(--on-surface);
+  line-height: 1.55;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==========================================================================
+   NAGŁÓWEK SPA (STITCH GLASSMORPHIC TOP BAR — BEZ NACHODZENIA TEKSTU)
+   ========================================================================== */
+.app-header {
+  background: rgba(255, 248, 243, 0.9);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(220, 193, 185, 0.55);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  transition: background 0.25s ease;
+}
+
+.header-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: nowrap;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.brand > div:last-child {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.brand-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(131, 49, 22, 0.22);
+  flex-shrink: 0;
+}
+
+.brand-title {
+  font-family: var(--font-headline);
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface-container);
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--outline-variant);
+  flex-shrink: 0;
+}
+
+.nav-btn {
+  background: transparent;
+  color: var(--on-surface-variant);
+  border: none;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.81rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.nav-btn:hover {
+  color: var(--on-surface);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.nav-btn.active {
+  background: var(--surface-container-lowest);
+  color: var(--primary);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(29, 27, 24, 0.08);
+}
+
+/* Na stronie głównej wyboru restauracji ukrywamy kafelki nawigacji lokalu i wyśrodkowujemy napis główny */
+body[data-theme="hub"]:not([data-staff-mode="true"]) .main-nav {
+  display: none !important;
+}
+
+body[data-theme="hub"]:not([data-staff-mode="true"]) .header-inner {
+  justify-content: center;
+  position: relative;
+}
+
+body[data-theme="hub"]:not([data-staff-mode="true"]) .brand {
+  flex: 0 1 auto;
+  flex-direction: column;
+  text-align: center;
+  gap: 4px;
+}
+
+body[data-theme="hub"]:not([data-staff-mode="true"]) .brand-icon-box {
+  display: none;
+}
+
+body[data-theme="hub"]:not([data-staff-mode="true"]) .brand-title {
+  font-size: 1.4rem;
+}
+
+body[data-theme="hub"]:not([data-staff-mode="true"]) .staff-header-btn {
+  position: absolute;
+  right: 24px;
+}
+
+/* W trybie pracownika ukrywamy nawigację klienta */
+body[data-staff-mode="true"] .main-nav {
+  display: none !important;
+}
+
+.telemetry-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--tertiary-fixed);
+  color: var(--free-text);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.25);
+}
+
+.staff-header-btn {
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+  border: 1px solid var(--outline-variant);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.staff-header-btn:hover {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+/* ==========================================================================
+   KONTENER GŁÓWNY I WIDOKI SPA
+   ========================================================================== */
+.app-container {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+  flex: 1;
+}
+
+body[data-staff-mode="true"] .app-container {
+  max-width: 1440px;
+}
+
+.spa-view {
+  display: none;
+  animation: stitchFadeIn 0.24s ease-out;
+}
+
+.spa-view.active-view {
+  display: block;
+}
+
+@keyframes stitchFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   WSPÓLNE PRZYCISKI I PASKI NAWIGACJI WEWNĘTRZNEJ
+   ========================================================================== */
+.back-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  background-image: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+  color: #ffffff;
+  border: none;
+  padding: 11px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(131, 49, 22, 0.18);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  background-image: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  border: 1px solid var(--outline-variant);
+  padding: 9px 16px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.86rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Stopka Stitch */
+.stitch-footer {
+  margin-top: 48px;
+  padding: 24px;
+  border-top: 1px solid var(--outline-variant);
+  text-align: center;
+  font-size: 0.82rem;
+  color: var(--on-surface-variant);
+}
