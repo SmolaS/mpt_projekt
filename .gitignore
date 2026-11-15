@@ -1,0 +1,28 @@
+__pycache__/
+*.db
+.env
+.pytest_cache/
+
+# Python / venv
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Sekrety i lokalne bazy
+.env
+*.db
+*.sqlite3
+
+# Python / venv
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Sekrety i lokalne bazy
+.env
+*.db
+*.sqlite3
