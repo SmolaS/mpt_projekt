@@ -50,17 +50,4 @@ SELECT record_occupancy_event(
   p_table_id => 3, p_state => 'occupied', p_confidence => 0.93, p_camera_id => 1,
   p_people_count => 2, p_model_version => 'yolo-v8-0.3', p_raw => '{"bbox": [..]}'::jsonb);
 ```
-Funkcja zapisuje zdarzenie i sama decyduje, czy zmienić stan - npewność, ręczne nadpisanie.
 
-
-## Do zrobienia po stronie wdrożenia
-
-* **Partycje**: `SELECT ensure_occupancy_partitions(2);` raz dziennie z crona (`pg_cron` lub systemowy).
-  Funkcje zapisu tworzą brakującą partycję awaryjnie, ale lepiej mieć ją wcześniej.
-* **Retencja**: stare partycje `occupancy_events` można odpinać i usuwać (`DROP TABLE occupancy_events_2026_01`).
-* **Uprawnienia**: osobne role dla API klienta, API pracownika i potoku wizji (teraz wszystko działa na jednym użytkowniku).
-  Dla klienta rozważ Row Level Security na `reservations` po `user_id`.
-* **`available_slots`** nie uwzględnia łączenia stolików (np. dwa dwójki dla czwórki); sam zapis łączonych
-  rezerwacji działa przez `create_reservation(..., ARRAY[1,2], ...)`.
-* **Uwierzytelnianie**: `users.password_hash` jest tylko polem. Hasła powinien obsługiwać backend
-  (bcrypt/argon2) lub zewnętrzny dostawca tożsamości.
