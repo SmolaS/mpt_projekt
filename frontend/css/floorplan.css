@@ -1,0 +1,544 @@
+/* ==========================================================================
+   Plik: css/floorplan.css — Plan Sali LIVE (8 kolumn + 4 kolumny Inspektor)
+   oraz 3 Rzuty Architektoniczne (Bistro, Trattoria, Sushi Zen)
+   ========================================================================== */
+
+/* ==========================================================================
+   STITCH EKRAN 2: PLAN SALI LIVE (8 KOLUMN MAPA + 4 KOLUMNY INSPEKTOR STOLIKA)
+   ========================================================================== */
+.stitch-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.stitch-section-header h2 {
+  font-family: var(--font-headline);
+  font-size: 1.9rem;
+  color: var(--on-surface);
+}
+
+.stitch-occupancy-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.occ-chip {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.occ-chip.free {
+  background: var(--free-bg);
+  color: var(--free-text);
+  border: 1px solid #86efac;
+}
+
+.occ-chip.occupied {
+  background: var(--occupied-bg);
+  color: var(--occupied-text);
+  border: 1px solid #fda4af;
+}
+
+.occ-chip.reserved {
+  background: var(--reserved-bg);
+  color: var(--reserved-text);
+  border: 1px solid #fcd34d;
+}
+
+/* Układ 8 kolumn (Plan Sali) + 4 kolumny (Inspektor Stolika LIVE) */
+.live-workspace-grid {
+  display: grid;
+  grid-template-columns: 8fr 4fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.floor-wrapper {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+}
+
+.legend-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--surface-container-low);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--outline-variant);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.status-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-free {
+  background: var(--free-border);
+}
+.dot-reserved {
+  background: var(--reserved-border);
+}
+.dot-occupied {
+  background: var(--occupied-border);
+}
+.dot-dirty {
+  background: var(--dirty-border);
+}
+.dot-selected {
+  background: var(--primary);
+}
+
+/* Sticky Inspektor Stolika LIVE (Prawa kolumna w Stitch Screen 2) */
+.table-inspector-drawer {
+  position: sticky;
+  top: 84px;
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 22px;
+  box-shadow: var(--shadow-md);
+}
+
+.inspector-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--outline-variant);
+  margin-bottom: 14px;
+}
+
+.inspector-overline {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+}
+
+.inspector-title {
+  font-family: var(--font-headline);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.inspector-telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.telemetry-cell {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.telemetry-cell .t-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.telemetry-cell .t-val {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--on-surface);
+}
+
+/* ==========================================================================
+   RZUTY ARCHITEKTONICZNE SALI (3 UNIKALNE STYLE POSADZKI + KRZESŁA I STOŁY)
+   ========================================================================== */
+.arch-blueprint {
+  border: 2px solid #89726c;
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  position: relative;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* 1. Posadzka Bistro: Ciepły parkiet dębowy i rotunda pod kopułą */
+.arch-blueprint.floor-bistro {
+  background-color: #f6ede4;
+  background-image:
+    radial-gradient(circle at 50% 52%, rgba(162, 72, 43, 0.09) 0%, rgba(162, 72, 43, 0.03) 38%, transparent 60%),
+    repeating-linear-gradient(90deg, rgba(131, 49, 22, 0.04) 0px, rgba(131, 49, 22, 0.04) 36px, transparent 36px, transparent 72px),
+    linear-gradient(rgba(131, 49, 22, 0.06) 1px, transparent 1px);
+  background-size: 100% 100%, 72px 100%, 100% 36px;
+}
+
+/* 2. Posadzka Trattoria: Włoska terakotowa szachownica */
+.arch-blueprint.floor-trattoria {
+  background-color: #fcf3e8;
+  background-image:
+    conic-gradient(
+      rgba(185, 28, 28, 0.07) 90deg,
+      transparent 90deg 180deg,
+      rgba(185, 28, 28, 0.07) 180deg 270deg,
+      transparent 270deg
+    );
+  background-size: 56px 56px;
+  border-color: #991b1b;
+}
+
+/* 3. Posadzka Sushi Zen: Maty Tatami */
+.arch-blueprint.floor-sushi {
+  background-color: #1e2430;
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.08) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.08) 2px, transparent 2px);
+  background-size: 90px 45px;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.arch-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px dashed rgba(137, 114, 108, 0.5);
+}
+
+.arch-door-pill,
+.arch-window-pill,
+.arch-camera-pill {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+}
+
+.arch-door-pill {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.arch-window-pill {
+  background: #e0f2fe;
+  color: #075985;
+  border: 1px solid #38bdf8;
+}
+
+.arch-camera-pill {
+  background: #1d1b18;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cam-pulse {
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.arch-tables-grid.grid-bistro {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+  align-items: center;
+}
+
+.arch-middle-trattoria {
+  display: grid;
+  grid-template-columns: 185px 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.trattoria-side-oven {
+  background: linear-gradient(180deg, #7f1d1d 0%, #991b1b 100%);
+  color: #fef2f2;
+  border: 2px solid #f87171;
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.arch-tables-grid.grid-trattoria {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.sushi-top-counter {
+  background: linear-gradient(90deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #fb7185;
+  color: #ffe4e6;
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.arch-tables-grid.grid-sushi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+  align-items: center;
+}
+
+/* Zestaw stolik + krzesła wokół blatu */
+.table-fixture {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  user-select: none;
+  transition: transform 0.18s ease;
+}
+
+.table-fixture.seats-6 {
+  grid-column: span 1;
+}
+
+.table-fixture.seats-8 {
+  grid-column: span 2;
+}
+
+.chairs-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.chairs-row.top {
+  margin-bottom: 4px;
+}
+.chairs-row.bottom {
+  margin-top: 4px;
+}
+
+.chair {
+  width: 20px;
+  height: 6px;
+  border-radius: 4px;
+  background: #89726c;
+  border: 1px solid #56423d;
+  transition: all 0.2s ease;
+}
+
+.table-top {
+  width: 100%;
+  border-radius: 14px;
+  padding: 10px 8px;
+  text-align: center;
+  border: 2px solid transparent;
+  background: #ffffff;
+  transition: all 0.18s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-fixture.seats-2 .table-top {
+  max-width: 122px;
+  min-height: 86px;
+  border-radius: 999px;
+}
+
+.table-fixture.seats-4 .table-top {
+  max-width: 156px;
+  min-height: 92px;
+  border-radius: 14px;
+}
+
+.table-fixture.seats-6 .table-top {
+  max-width: 195px;
+  min-height: 98px;
+  border-radius: 16px;
+}
+
+.table-fixture.seats-8 .table-top {
+  max-width: 310px;
+  min-height: 104px;
+  border-radius: 20px;
+}
+
+.table-top-title {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 2px;
+  color: #1d1b18;
+}
+
+.table-top-meta {
+  font-size: 0.72rem;
+  color: #56423d;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.table-top-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 3px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+/* Statusy stolików na mapie */
+.table-fixture.status-free .table-top {
+  background: var(--free-bg);
+  border-color: var(--free-border);
+}
+.table-fixture.status-free .chair {
+  background: #22c55e;
+  border-color: #15803d;
+}
+.table-fixture.status-free .table-top-badge {
+  background: #ffffff;
+  color: var(--free-text);
+}
+
+.table-fixture.status-reserved .table-top {
+  background: var(--reserved-bg);
+  border-color: var(--reserved-border);
+}
+.table-fixture.status-reserved .chair {
+  background: #f59e0b;
+  border-color: #b45309;
+}
+.table-fixture.status-reserved .table-top-badge {
+  background: #ffffff;
+  color: var(--reserved-text);
+}
+
+.table-fixture.status-occupied .table-top {
+  background: var(--occupied-bg);
+  border-color: var(--occupied-border);
+}
+.table-fixture.status-occupied .chair {
+  background: #f43f5e;
+  border-color: #be123c;
+}
+.table-fixture.status-occupied .table-top-badge {
+  background: #ffffff;
+  color: var(--occupied-text);
+}
+
+.table-fixture.status-dirty .table-top {
+  background: var(--dirty-bg);
+  border-color: var(--dirty-border);
+}
+.table-fixture.status-dirty .chair {
+  background: #d97706;
+  border-color: #78350f;
+}
+.table-fixture.status-dirty .table-top-badge {
+  background: #ffffff;
+  color: var(--dirty-text);
+}
+
+.table-fixture.status-disabled .table-top {
+  background: var(--disabled-bg);
+  border-color: var(--disabled-border);
+  opacity: 0.65;
+}
+
+.table-fixture.clickable {
+  cursor: pointer;
+}
+.table-fixture.clickable:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+.table-fixture.selected-table .table-top {
+  outline: 3px solid var(--primary);
+  box-shadow: 0 0 0 5px rgba(162, 72, 43, 0.25);
+}
+
+.arch-bottom-zones {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(137, 114, 108, 0.5);
+}
+
+.arch-zone-bar,
+.arch-zone-wc {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.zone-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  background: var(--on-surface);
+  color: #ffffff;
+  padding: 2px 7px;
+  border-radius: 4px;
+}

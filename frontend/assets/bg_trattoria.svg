@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="romaBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#450a0a"/>
+      <stop offset="50%" stop-color="#7f1d1d"/>
+      <stop offset="100%" stop-color="#9a3412"/>
+    </linearGradient>
+    <radialGradient id="ovenFire" cx="50%" cy="75%" r="40%">
+      <stop offset="0%" stop-color="#fde047" stop-opacity="0.6"/>
+      <stop offset="50%" stop-color="#f97316" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7f1d1d" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="400" fill="url(#romaBg)"/>
+  <rect width="1200" height="400" fill="url(#ovenFire)"/>
+
+  <!-- Rzymskie arkady i ceglane łuki -->
+  <g stroke="#fdba74" stroke-width="2" fill="none" opacity="0.22">
+    <path d="M 60 400 L 60 190 A 110 110 0 0 1 280 190 L 280 400" stroke-width="4"/>
+    <path d="M 920 400 L 920 190 A 110 110 0 0 1 1140 190 L 1140 400" stroke-width="4"/>
+    <!-- Centralny piec chlebowy do pizzy -->
+    <path d="M 430 400 L 430 250 A 170 150 0 0 1 770 250 L 770 400" stroke-width="5"/>
+    <path d="M 480 400 L 480 280 A 120 110 0 0 1 720 280 L 720 400" fill="#fb923c" fill-opacity="0.18"/>
+  </g>
+
+  <!-- Płomienie w piecu -->
+  <g fill="#fde047" opacity="0.35">
+    <path d="M 560 400 Q 575 320 600 350 Q 615 300 635 355 Q 655 330 660 400 Z"/>
+  </g>
+
+  <!-- Włoskie girlandy i gałązki bazylii/oliwki -->
+  <g fill="#4ade80" opacity="0.28">
+    <ellipse cx="150" cy="80" rx="26" ry="12" transform="rotate(-25 150 80)"/>
+    <ellipse cx="195" cy="95" rx="22" ry="10" transform="rotate(15 195 95)"/>
+    <ellipse cx="1050" cy="80" rx="26" ry="12" transform="rotate(25 1050 80)"/>
+    <ellipse cx="1005" cy="95" rx="22" ry="10" transform="rotate(-15 1005 95)"/>
+  </g>
+
+  <!-- Subtelny włoski akcent kolorystyczny na dole -->
+  <rect x="0" y="392" width="400" height="8" fill="#16a34a" opacity="0.7"/>
+  <rect x="400" y="392" width="400" height="8" fill="#ffffff" opacity="0.7"/>
+  <rect x="800" y="392" width="400" height="8" fill="#dc2626" opacity="0.7"/>
+</svg>

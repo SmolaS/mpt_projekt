@@ -1,0 +1,18 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+.vscode/
+*.swp
+*~
+
+# Logs / local
+*.log
+*.local
+.cache/
+tmp/
+temp/
+
+# Archives / unpack leftovers
+_mpt_unpack/

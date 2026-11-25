@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trackujemy Stoły — Atelier Culinaire &amp; Live Vision (YOLO)</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/client.css" />
+  <link rel="stylesheet" href="css/floorplan.css" />
+  <link rel="stylesheet" href="css/staff.css" />
+</head>
+<body data-theme="hub">
+
+  <!-- NAGŁÓWEK SPA (STITCH GLASSMORPHIC TOP BAR) -->
+  <header class="app-header" id="main-header">
+    <div class="header-inner">
+      <div class="brand" onclick="navigateTo('view-restaurants')">
+        <div class="brand-icon-box" aria-hidden="true">🍽️</div>
+        <div>
+          <div class="brand-title" id="header-restaurant-name">Trackujemy Stoły — Wybór Restauracji</div>
+          <div class="brand-subtitle">Kraków • Gastronomia &amp; Computer Vision (LIVE YOLO)</div>
+        </div>
+      </div>
+
+      <nav class="main-nav" aria-label="Główna nawigacja">
+        <button type="button" class="nav-btn active" data-target="view-restaurants" onclick="navigateTo('view-restaurants')">
+          Wybór Restauracji
+        </button>
+        <button type="button" class="nav-btn" data-target="view-home" onclick="navigateTo('view-home')">
+          Strona Główna
+        </button>
+        <button type="button" class="nav-btn" data-target="view-menu" onclick="navigateTo('view-menu')">
+          📖 Menu
+        </button>
+        <button type="button" class="nav-btn" data-target="view-live-floor" onclick="navigateTo('view-live-floor')">
+          🟢 Rezerwacja LIVE (1h)
+        </button>
+        <button type="button" class="nav-btn" data-target="view-booking-form" onclick="navigateTo('view-booking-form')">
+          📅 Rezerwacja na dzień
+        </button>
+      </nav>
+
+      <!-- PRZYCISK PANELU PRACOWNIKA -->
+      <button type="button" class="staff-header-btn" id="staff-portal-btn" onclick="openStaffLogin()">
+        🔒 Panel Pracownika
+      </button>
+    </div>
+  </header>
+
+  <!-- GŁÓWNY KONTENER WIDOKÓW SPA -->
+  <main class="app-container">
+
+    <!-- ======================================================================
+         0. STITCH EKRAN 1: WYBÓR RESTAURACJI (HERO + FILTRY + BAROMETR + KARTY + BENTO)
+         ====================================================================== -->
+    <section id="view-restaurants" class="spa-view active-view" aria-labelledby="aggregator-heading">
+      <div class="stitch-hero">
+        <div class="stitch-hero-top">
+          <span class="stitch-breadcrumb">📍 Małopolska / Kraków / Wybór Lokalu</span>
+          <span class="telemetry-live-pill">
+            <span class="pulse-dot"></span>
+            Kamera YOLO Aktywna • 60 FPS
+          </span>
+        </div>
+
+        <div class="stitch-hero-grid">
+          <div>
+            <h1 id="aggregator-heading">
+              Inteligentna rezerwacja stolików <em>z podglądem na żywo</em>.
+            </h1>
+            <p>
+              Sprawdź wolne stoliki w krakowskich restauracjach w czasie rzeczywistym dzięki detekcji obrazu AI, zablokuj stolik od ręki na 1h lub zarezerwuj termin w kalendarzu.
+            </p>
+          </div>
+
+          <div class="cuisine-filter-bar" aria-label="Filtruj według kuchni">
+            <button type="button" class="cuisine-pill active" data-cuisine="all" onclick="filterCuisine('all')">
+              Wszystkie (3)
+            </button>
+            <button type="button" class="cuisine-pill" data-cuisine="bistro" onclick="filterCuisine('bistro')">
+              Bistro europejskie
+            </button>
+            <button type="button" class="cuisine-pill" data-cuisine="trattoria" onclick="filterCuisine('trattoria')">
+              Włoska
+            </button>
+            <button type="button" class="cuisine-pill" data-cuisine="sushi" onclick="filterCuisine('sushi')">
+              Ramen &amp; Sushi
+            </button>
+          </div>
+        </div>
+
+        <!-- 4-KARTOWY BAROMETR STATYSTYCZNY LIVE -->
+        <div class="barometer-grid" id="hub-barometer-stats">
+          <!-- Wypełniane dynamicznie przez app.js -->
+        </div>
+      </div>
+
+      <!-- SIATKA 3 KART RESTAURACJI W STYLU STITCH -->
+      <div class="restaurant-grid" id="restaurants-aggregator-list">
+        <!-- Generowane dynamicznie przez app.js -->
+      </div>
+
+      <!-- SEKCJA BENTO: JAK DZIAŁA WIZJA KOMPUTEROWA YOLO? -->
+      <div class="stitch-bento-section">
+        <div class="stitch-bento-header">
+          <div>
+            <div class="rest-cuisine-overline">Technologia w służbie gościnności</div>
+            <h2>Jak działa wizja komputerowa YOLO?</h2>
+          </div>
+          <span class="meta-pill">100% Anonimowości RODO • Odświeżanie co 5 sekund</span>
+        </div>
+
+        <div class="bento-grid-3">
+          <article class="bento-card">
+            <div class="bento-step-num">01</div>
+            <h3>Analiza wideo w czasie rzeczywistym</h3>
+            <p>
+              Model sieci neuronowej YOLO analizuje wyłącznie obrys blatów i krzeseł bez nagrywania wizerunku twarzy gości, aktualizując mapę sali na żywo.
+            </p>
+          </article>
+
+          <article class="bento-card">
+            <div class="bento-step-num">02</div>
+            <h3>Szybka blokada stolika do 1h</h3>
+            <p>
+              Jesteś w pobliżu lokalu? Kliknij zielony stolik na planie sali LIVE i zablokuj go jednym kliknięciem na przyjście w ciągu 15–60 minut.
+            </p>
+          </article>
+
+          <article class="bento-card">
+            <div class="bento-step-num">03</div>
+            <h3>Rezerwacja na dzień z Kartą Dań</h3>
+            <p>
+              Planujesz kolację z wyprzedzeniem? Wybierz datę, godzinę oraz stolik na tym samym rzucie architektonicznym i od razu przejrzyj menu Szefa Kuchni.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         1. WIDOK GŁÓWNY WYBRANEJ RESTAURACJI (STRONA GŁÓWNA LOKALU)
+         ====================================================================== -->
+    <section id="view-home" class="spa-view" aria-labelledby="home-restaurant-title">
+      <div class="back-bar">
+        <button type="button" class="btn-secondary" onclick="navigateTo('view-restaurants')">
+          &larr; Zmień restaurację (Lista lokali)
+        </button>
+        <span class="telemetry-live-pill" id="home-live-pill">
+          <span class="pulse-dot"></span>
+          Detekcja YOLO aktywna
+        </span>
+      </div>
+
+      <div class="hero-card">
+        <span class="hero-badge" id="home-restaurant-cuisine">🍷 Kuchnia polska i europejska</span>
+        <h1 id="home-restaurant-title">Restauracja &amp; Bistro Pod Kopułą</h1>
+        <p id="home-restaurant-tagline">
+          Świeże składniki, autorskie dania i podgląd wolnych stolików na żywo dzięki systemowi wizyjnemu.
+        </p>
+        <div class="meta-pills">
+          <span class="meta-pill" id="home-restaurant-address">📍 ul. Reymonta 17, Kraków</span>
+          <span class="meta-pill" id="home-restaurant-hours">🕒 Godziny otwarcia: 12:00 – 22:00</span>
+          <span class="meta-pill" id="home-restaurant-free-summary">🟢 Wolne stoliki LIVE: —</span>
+        </div>
+      </div>
+
+      <!-- 3 CZYTELNIE OPISANE KAFELKI WYBORU WIDOKU W LOKALU -->
+      <div class="cta-grid-3">
+        <article class="cta-card" id="cta-open-menu" onclick="navigateTo('view-menu')">
+          <div>
+            <span class="cta-icon">📖</span>
+            <h3>1. Zobacz Menu (Karta Dań)</h3>
+            <p>
+              Oddzielna strona z pełną kartą dań lokalu: przystawki, dania główne oraz napoje i wina wraz z opisami składników, gramaturą i cenami.
+            </p>
+          </div>
+          <span class="cta-action">Otwórz stronę Menu &rarr;</span>
+        </article>
+
+        <article class="cta-card" onclick="navigateTo('view-live-floor')">
+          <div>
+            <span class="cta-icon">🟢</span>
+            <h3>2. Rezerwacja LIVE (Stan sali na żywo — do 1h)</h3>
+            <p>
+              Oddzielna strona z rzutem sali z kamery YOLO na żywo i bocznym Inspektorem. Pozwala od ręki zablokować wolny (zielony) stolik na przyjście w ciągu 15–60 minut.
+            </p>
+          </div>
+          <span class="cta-action">Otwórz Rezerwację LIVE (do 1h) &rarr;</span>
+        </article>
+
+        <article class="cta-card" id="cta-open-reservation" onclick="navigateTo('view-booking-form')">
+          <div>
+            <span class="cta-icon">📅</span>
+            <h3>3. Rezerwacja na wybrany dzień (Kalendarz)</h3>
+            <p>
+              Oddzielna strona rezerwacji terminowej: wybierz dzień z kalendarza, godzinę (okno 2h) oraz liczbę osób, kliknij stolik na planie sali i odbierz kod rezerwacji.
+            </p>
+          </div>
+          <span class="cta-action">Otwórz Rezerwację na dzień &rarr;</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         2. ODDZIELNA STRONA: MENU / KARTA DAŃ (#view-menu)
+         ====================================================================== -->
+    <section id="view-menu" class="spa-view" aria-labelledby="menu-view-heading">
+      <div class="back-bar">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-home')">&larr; Strona Główna lokalu</button>
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-restaurants')">Zmień restaurację</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-live-floor')">🟢 Rezerwacja LIVE (do 1h)</button>
+          <button type="button" class="btn-primary" onclick="navigateTo('view-booking-form')">📅 Rezerwacja na dzień &rarr;</button>
+        </div>
+      </div>
+
+      <div class="stitch-section-header">
+        <div>
+          <div class="rest-cuisine-overline">Autorska selekcja kulinarna</div>
+          <h2 id="menu-view-heading">Karta Dań Szefa Kuchni (Menu)</h2>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <h3>🥗 Przystawki</h3>
+        <div class="menu-list" id="menu-starters"></div>
+      </div>
+
+      <div class="menu-section">
+        <h3>🍽️ Dania Główne</h3>
+        <div class="menu-list" id="menu-mains"></div>
+      </div>
+
+      <div class="menu-section">
+        <h3>🍷 Napoje &amp; Karta Win</h3>
+        <div class="menu-list" id="menu-drinks"></div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         3. WIDOK WYBORU TRYBU REZERWACJI (#view-reservation-hub)
+         ====================================================================== -->
+    <section id="view-reservation-hub" class="spa-view" aria-labelledby="hub-view-heading">
+      <div class="back-bar">
+        <button type="button" class="btn-secondary" onclick="navigateTo('view-home')">&larr; Strona Główna Lokalu</button>
+        <button type="button" class="btn-secondary" onclick="navigateTo('view-menu')">📖 Zobacz Menu</button>
+      </div>
+
+      <div class="stitch-section-header">
+        <div>
+          <div class="rest-cuisine-overline">Wybierz sposób rezerwacji</div>
+          <h2 id="hub-view-heading">Centrum Rezerwacji Stolików</h2>
+        </div>
+      </div>
+
+      <div class="cta-grid">
+        <article class="cta-card" id="hub-card-live" onclick="navigateTo('view-live-floor')">
+          <div>
+            <span class="cta-icon">🟢</span>
+            <h3>Rezerwacja LIVE (Stan sali na żywo — do 1h)</h3>
+            <p>
+              Interaktywny rzut sali z kamery YOLO z bocznym Inspektorem Stolika. Kliknij wolny stolik i zablokuj go na przyjście w ciągu 15–60 minut.
+            </p>
+          </div>
+          <span class="cta-action">Otwórz Rezerwację LIVE &rarr;</span>
+        </article>
+
+        <article class="cta-card" id="hub-card-booking" onclick="navigateTo('view-booking-form')">
+          <div>
+            <span class="cta-icon">📅</span>
+            <h3>Rezerwacja na wybrany dzień (Kalendarz)</h3>
+            <p>
+              Wybierz dzień w kalendarzu, godzinę (okno 2h) i liczbę gości, wskaż stolik na planie sali i potwierdź rezerwację z kodem anulowania.
+            </p>
+          </div>
+          <span class="cta-action">Otwórz Rezerwację na dzień &rarr;</span>
+        </article>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         4. ODDZIELNA STRONA: REZERWACJA LIVE + BOCZNY INSPEKTOR STOLIKA (DO 1H)
+         ====================================================================== -->
+    <section id="view-live-floor" class="spa-view" aria-labelledby="live-floor-heading">
+      <div class="back-bar">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-home')">
+            &larr; Strona Główna lokalu
+          </button>
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-restaurants')">
+            Zmień restaurację
+          </button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-menu')">
+            📖 Zobacz Menu
+          </button>
+          <button type="button" class="btn-primary" onclick="navigateTo('view-booking-form')">
+            📅 Rezerwacja na wybrany dzień &rarr;
+          </button>
+        </div>
+      </div>
+
+      <div class="stitch-section-header">
+        <div>
+          <div class="rest-cuisine-overline">Wizja Komputerowa YOLO • Podgląd w czasie rzeczywistym</div>
+          <h2 id="live-floor-heading">Rezerwacja LIVE — Aktualny stan sali (blokada do 1h)</h2>
+        </div>
+        <div class="stitch-occupancy-strip" id="live-occupancy-pills">
+          <!-- Dynamicznie uzupełniane: X wolnych, Y zajętych, Z zarezerwowanych -->
+        </div>
+      </div>
+
+      <!-- UKŁAD STITCH: 8 KOLUMN PLAN SALI + 4 KOLUMNY STICKY INSPEKTOR STOLIKA -->
+      <div class="live-workspace-grid">
+        <!-- LEWA KOLUMNA (8/12): RZUT ARCHITEKTONICZNY SALI -->
+        <div class="floor-wrapper">
+          <div class="legend-bar" aria-label="Legenda statusów stolików LIVE">
+            <div class="legend-item">
+              <span class="status-dot dot-free"></span>
+              <span>Wolny (Dostępny od zaraz — do 1h)</span>
+            </div>
+            <div class="legend-item">
+              <span class="status-dot dot-occupied"></span>
+              <span>Zajęty fizycznie (Kamera YOLO)</span>
+            </div>
+            <div class="legend-item">
+              <span class="status-dot dot-reserved"></span>
+              <span>Zarezerwowany</span>
+            </div>
+            <div class="legend-item">
+              <span class="status-dot dot-dirty"></span>
+              <span>Do sprzątania</span>
+            </div>
+          </div>
+
+          <div id="live-floor-map-container"></div>
+        </div>
+
+        <!-- PRAWA KOLUMNA (4/12): STICKY INSPEKTOR STOLIKA LIVE -->
+        <aside class="table-inspector-drawer" aria-label="Inspektor wybranego stolika LIVE">
+          <div class="inspector-header">
+            <div>
+              <div class="inspector-overline">Inspektor Stolika LIVE</div>
+              <div class="inspector-title" id="inspector-table-title">Wybierz stolik</div>
+            </div>
+            <span id="inspector-table-badge" class="staff-badge free">Kliknij na mapie</span>
+          </div>
+
+          <p id="inspector-table-desc" style="font-size:0.86rem; color:var(--on-surface-variant); margin-bottom:14px;">
+            Kliknij dowolny stolik na rzucie architektonicznym po lewej stronie, aby sprawdzić telemetrię YOLO i zarezerwować go od ręki.
+          </p>
+
+          <div class="inspector-telemetry-grid" id="inspector-telemetry-box">
+            <div class="telemetry-cell">
+              <div class="t-label">Sensor YOLO</div>
+              <div class="t-val" id="insp-confidence">—</div>
+            </div>
+            <div class="telemetry-cell">
+              <div class="t-label">Pojemność</div>
+              <div class="t-val" id="insp-seats">—</div>
+            </div>
+            <div class="telemetry-cell">
+              <div class="t-label">Strefa Sali</div>
+              <div class="t-val" id="insp-zone">—</div>
+            </div>
+            <div class="telemetry-cell">
+              <div class="t-label">Wykryte osoby</div>
+              <div class="t-val" id="insp-detected">—</div>
+            </div>
+          </div>
+
+          <!-- FORMULARZ EKSPRESOWEJ REZERWACJI LIVE (DO 1H W PRZÓD) WEWNĄTRZ INSPEKTORA -->
+          <div id="live-step-confirm" style="display: none;">
+            <div class="selected-table-banner" style="margin-bottom:12px;">
+              <span id="live-selected-table-summary">Wybrany stolik LIVE: —</span>
+            </div>
+
+            <form id="live-reservation-form">
+              <div class="form-group">
+                <label for="live-arrival-offset">Przyjście do lokalu (maks. 1h) *</label>
+                <select id="live-arrival-offset" name="arrivalOffset" onchange="updateLiveConfirmationStepVisibility()" required>
+                  <option value="15" selected>Za 15 minut</option>
+                  <option value="30">Za 30 minut</option>
+                  <option value="45">Za 45 minut</option>
+                  <option value="60">Za 60 minut (maks. 1h)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="live-booking-name">Imię i nazwisko *</label>
+                <input type="text" id="live-booking-name" name="name" placeholder="np. Jan Kowalski" required />
+              </div>
+
+              <div class="form-group">
+                <label for="live-booking-email">Adres e-mail *</label>
+                <input type="email" id="live-booking-email" name="email" placeholder="jan.kowalski@example.com" required />
+              </div>
+
+              <div class="form-group">
+                <label for="live-booking-phone">Numer telefonu *</label>
+                <input type="tel" id="live-booking-phone" name="phone" placeholder="np. 500 600 700" required />
+              </div>
+
+              <button type="submit" class="btn-primary" id="submit-live-booking-btn" style="width: 100%;">
+                Zablokuj stolik teraz (do 1h) &rarr;
+              </button>
+            </form>
+          </div>
+
+          <!-- INFORMACJA GDY KLIKNIĘTY STOLIK JEST ZAJĘTY LUB ZAREZERWOWANY -->
+          <div id="inspector-unavailable-box" style="display: none; margin-top: 10px;">
+            <div class="selected-table-banner" style="background:var(--occupied-bg); color:var(--occupied-text); border-color:#fda4af;">
+              Ten stolik nie jest teraz dostępny od ręki, ale możesz zarezerwować go na inną godzinę lub wybrany dzień w kalendarzu.
+            </div>
+          </div>
+
+          <button type="button" class="btn-secondary" style="width:100%; margin-top:10px;" onclick="jumpFromInspectorToCalendarBooking()">
+            📅 Zarezerwuj ten stolik na inny dzień / godzinę &rarr;
+          </button>
+
+          <!-- KOMUNIKAT POTWIERDZENIA SZYBKIEJ REZERWACJI LIVE -->
+          <div class="confirmation-box" id="live-booking-confirmation" role="status" aria-live="polite">
+            <h4>✓ Stolik zablokowany (LIVE)</h4>
+            <ul class="confirmation-details" id="live-confirmation-summary-list"></ul>
+            <div>
+              Kod rezerwacji:
+              <span class="code-badge" id="live-confirmation-code">------</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         5. ODDZIELNA STRONA: REZERWACJA NA WYBRANY DZIEŃ (KALENDARZ)
+         ====================================================================== -->
+    <section id="view-booking-form" class="spa-view" aria-labelledby="booking-form-heading">
+      <div class="back-bar">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-home')">
+            &larr; Strona Główna lokalu
+          </button>
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-restaurants')">
+            Zmień restaurację
+          </button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-menu')">
+            📖 Zobacz Menu
+          </button>
+          <button type="button" class="btn-secondary" onclick="navigateTo('view-live-floor')">
+            🟢 Przełącz na Rezerwację LIVE (do 1h)
+          </button>
+        </div>
+      </div>
+
+      <div class="stitch-section-header">
+        <div>
+          <div class="rest-cuisine-overline">Rezerwacja terminowa z wyborem stolika na mapie</div>
+          <h2 id="booking-form-heading">Rezerwacja stolika na wybrany dzień</h2>
+        </div>
+      </div>
+
+      <!-- KROK 1: PARAMETRY WIZYTY (DATA, GODZINA, LICZBA GOŚCI) -->
+      <div class="filter-strip">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="booking-date">Krok 1: Data wizyty *</label>
+          <input type="date" id="booking-date" name="date" value="2026-11-05" onchange="updateBookingFloorFilter()" required />
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="booking-time">Krok 2: Okno czasowe (2h) *</label>
+          <select id="booking-time" name="time" onchange="updateBookingFloorFilter()" required>
+            <option value="17:00">17:00 – 19:00</option>
+            <option value="18:00" selected>18:00 – 20:00</option>
+            <option value="19:00">19:00 – 21:00</option>
+            <option value="20:00">20:00 – 22:00</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="booking-guests">Krok 3: Liczba gości *</label>
+          <select id="booking-guests" name="guests" onchange="updateBookingFloorFilter()" required>
+            <option value="2" selected>2 osoby</option>
+            <option value="4">4 osoby</option>
+            <option value="6">6 osób</option>
+            <option value="8">8 osób (Stół duży / VIP)</option>
+          </select>
+        </div>
+
+        <div>
+          <button type="button" class="btn-primary" style="width:100%;" onclick="updateBookingFloorFilter()">
+            Sprawdź dostępność na planie
+          </button>
+        </div>
+      </div>
+
+      <!-- KROK 2: PLAN SALI DO WYBORU STOLIKA NA DANY DZIEŃ -->
+      <div class="floor-wrapper" style="margin-bottom: 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+          <h3 style="font-family:var(--font-headline); font-size:1.2rem;">
+            Krok 2: Kliknij wolny (zielony) stolik na planie sali:
+          </h3>
+          <div class="legend-bar" style="margin-bottom:0;">
+            <div class="legend-item"><span class="status-dot dot-free"></span><span>Wolny w wybranym terminie</span></div>
+            <div class="legend-item"><span class="status-dot dot-reserved"></span><span>Zarezerwowany</span></div>
+            <div class="legend-item"><span class="status-dot dot-selected"></span><span>Twój wybrany stolik</span></div>
+          </div>
+        </div>
+
+        <div id="booking-floor-map-container"></div>
+      </div>
+
+      <!-- KROK 3: FORMULARZ DANYCH KONTAKTOWYCH I POTWIERDZENIE #TK-XXXX -->
+      <div class="step-confirm-card" id="booking-step-confirm">
+        <div class="rest-cuisine-overline">Krok 3: Finalizacja rezerwacji</div>
+        <h3 style="font-family:var(--font-headline); font-size:1.45rem; margin-bottom:12px;">
+          Dane gościa i potwierdzenie rezerwacji na dzień
+        </h3>
+
+        <div class="selected-table-banner">
+          <span id="selected-table-summary-text">Kliknij wolny (zielony) stolik na planie powyżej, aby przypisać go do rezerwacji.</span>
+        </div>
+
+        <form id="reservation-form">
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="booking-name">Imię i nazwisko *</label>
+              <input type="text" id="booking-name" name="name" placeholder="np. Jan Kowalski" required />
+            </div>
+
+            <div class="form-group">
+              <label for="booking-phone">Numer telefonu *</label>
+              <input type="tel" id="booking-phone" name="phone" placeholder="np. 500 600 700" required />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="booking-email">Adres e-mail *</label>
+              <input type="email" id="booking-email" name="email" placeholder="jan.kowalski@example.com" required />
+            </div>
+
+            <div class="form-group">
+              <label for="booking-notes">Uwagi do rezerwacji (opcjonalnie)</label>
+              <input type="text" id="booking-notes" name="notes" placeholder="np. stolik przy oknie, rocznica, alergia..." />
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="submit-booking-btn" style="width: 100%;">
+            Zatwierdź i potwierdź rezerwację na wybrany dzień &rarr;
+          </button>
+        </form>
+
+        <!-- KARTA POTWIERDZENIA REZERWACJI -->
+        <div class="confirmation-box" id="booking-confirmation" role="status" aria-live="polite">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h4>✓ Rezerwacja potwierdzona</h4>
+            <span class="staff-badge free">POTWIERDZONA</span>
+          </div>
+          <ul class="confirmation-details" id="confirmation-summary-list"></ul>
+          <div>
+            Kod anulowania / zarządzania:
+            <span class="code-badge" id="confirmation-code">------</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         6. WIDOK LOGOWANIA PRACOWNIKA (SZYBKIE PRZESKOCZENIE DO PANELU)
+         ====================================================================== -->
+    <section id="view-staff-login" class="spa-view" aria-labelledby="staff-login-heading">
+      <div class="back-bar">
+        <button type="button" class="btn-secondary" onclick="navigateTo('view-restaurants')">
+          &larr; Powrót do Panelu Klienta
+        </button>
+      </div>
+
+      <div class="staff-login-card">
+        <div class="rest-cuisine-overline">System Zarządzania Salą &amp; Kamerami YOLO</div>
+        <h2 id="staff-login-heading">🔒 Logowanie Pracownika (StolikAI)</h2>
+        <p>
+          Wybierz lokal gastronomiczny i kliknij przycisk logowania (w wersji demonstracyjnej autoryzacja przenosi bezpośrednio do panelu operacyjnego).
+        </p>
+
+        <form onsubmit="handleStaffLoginSubmit(event)">
+          <div class="form-group">
+            <label for="staff-login-restaurant">Wybierz zarządzaną restaurację</label>
+            <select id="staff-login-restaurant">
+              <option value="bistro-agh">Restauracja &amp; Bistro Pod Kopułą</option>
+              <option value="trattoria-roma">Trattoria Bella Roma</option>
+              <option value="sushi-zen">Zen Ramen &amp; Sushi Bar</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="staff-login-user">Identyfikator pracownika / Rola</label>
+            <input type="text" id="staff-login-user" value="manager@stolikai.pl (Kierownik Sali)" />
+          </div>
+
+          <div class="form-group">
+            <label for="staff-login-pin">Kod PIN / Hasło (Demo)</label>
+            <input type="password" id="staff-login-pin" value="admin123" />
+          </div>
+
+          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;">
+            Zaloguj i otwórz Panel Pracownika &rarr;
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         7. PANEL PRACOWNIKA RESTAURACJI (WSZYSTKIE 6 MODUŁÓW ZE STOLIK-AI)
+         ====================================================================== -->
+    <section id="view-staff-panel" class="spa-view" aria-label="Panel zarządzania restauracją">
+      <div class="staff-shell">
+
+        <!-- PASEK BOCZNY PANELU PRACOWNIKA (StolikAI) -->
+        <aside class="staff-sidebar">
+          <div>
+            <div class="staff-brand-mark">StolikAI</div>
+            <div class="staff-brand-sub">Panel zarządzania restauracją</div>
+          </div>
+
+          <div class="staff-rest-selector">
+            <label for="staff-active-restaurant">Zarządzany lokal:</label>
+            <select id="staff-active-restaurant" onchange="changeStaffRestaurant(this.value)">
+              <option value="bistro-agh">Bistro Pod Kopułą</option>
+              <option value="trattoria-roma">Trattoria Bella Roma</option>
+              <option value="sushi-zen">Zen Ramen &amp; Sushi Bar</option>
+            </select>
+          </div>
+
+          <nav class="staff-nav" aria-label="Nawigacja panelu pracownika">
+            <button type="button" class="staff-nav-btn active" data-staff-tab="dashboard" onclick="switchStaffTab('dashboard')">
+              📊 Pulpit
+            </button>
+            <button type="button" class="staff-nav-btn" data-staff-tab="occupancy" onclick="switchStaffTab('occupancy')">
+              🗺️ Zajętość sali
+            </button>
+            <button type="button" class="staff-nav-btn" data-staff-tab="tables" onclick="switchStaffTab('tables')">
+              🪑 Stoliki
+            </button>
+            <button type="button" class="staff-nav-btn" data-staff-tab="reservations" onclick="switchStaffTab('reservations')">
+              📅 Rezerwacje
+            </button>
+            <button type="button" class="staff-nav-btn" data-staff-tab="cameras" onclick="switchStaffTab('cameras')">
+              📷 Kamery
+            </button>
+            <button type="button" class="staff-nav-btn" data-staff-tab="detections" onclick="switchStaffTab('detections')">
+              🧠 Historia detekcji
+            </button>
+          </nav>
+
+          <div class="staff-sidebar-foot">
+            Model AI rozpoznaje zajętość stolików z kamer. Panel pozwala zarządzać salą, rezerwacjami i źródłami wideo.
+          </div>
+
+          <button type="button" class="btn-secondary" style="width: 100%;" onclick="navigateTo('view-restaurants')">
+            &larr; Wyloguj do Panelu Klienta
+          </button>
+        </aside>
+
+        <!-- GŁÓWNA PRZESTRZEŃ ROBOCZA PANELU PRACOWNIKA -->
+        <div class="staff-main">
+
+          <!-- ZAKŁADKA 1: PULPIT (DashboardPage) -->
+          <div id="staff-tab-dashboard" class="staff-subview active-subview">
+            <div class="staff-page-header">
+              <div>
+                <h1>Pulpit operacyjny</h1>
+                <p>Podgląd zajętości, kamer i najbliższych rezerwacji w czasie rzeczywistym.</p>
+              </div>
+              <button type="button" class="btn-secondary" onclick="renderStaffPanel()">
+                Odśwież dane
+              </button>
+            </div>
+
+            <div class="staff-grid-stats" id="staff-dashboard-stats"></div>
+
+            <div class="staff-panel">
+              <h2>Mapa sali (na żywo — kliknij dowolny stolik, aby szybko zmienić jego status)</h2>
+              <div id="staff-dashboard-map"></div>
+            </div>
+
+            <div class="staff-panel-grid">
+              <div>
+                <div class="staff-panel">
+                  <h2>Nadchodzące rezerwacje</h2>
+                  <div class="staff-list" id="staff-dashboard-upcoming"></div>
+                </div>
+
+                <div class="staff-panel">
+                  <h2>Ostatnie detekcje YOLO</h2>
+                  <div class="staff-list" id="staff-dashboard-detections"></div>
+                </div>
+              </div>
+
+              <div class="staff-panel">
+                <h2>Lista stolików i pewność detekcji AI</h2>
+                <div class="staff-list" id="staff-dashboard-table-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ZAKŁADKA 2: ZAJĘTOŚĆ SALI (OccupancyPage) -->
+          <div id="staff-tab-occupancy" class="staff-subview">
+            <div class="staff-page-header">
+              <div>
+                <h1>Zajętość sali</h1>
+                <p>Stan stolików na podstawie detekcji AI z kamer restauracji.</p>
+              </div>
+              <button type="button" class="btn-secondary" onclick="renderStaffPanel()">
+                Odśwież
+              </button>
+            </div>
+
+            <div class="staff-panel">
+              <div class="legend-bar">
+                <div class="legend-item"><span class="status-dot dot-free"></span><span>wolny</span></div>
+                <div class="legend-item"><span class="status-dot dot-occupied"></span><span>zajęty</span></div>
+                <div class="legend-item"><span class="status-dot dot-reserved"></span><span>zarezerwowany</span></div>
+                <div class="legend-item"><span class="status-dot dot-dirty"></span><span>do sprzątania</span></div>
+              </div>
+              <div id="staff-occupancy-map"></div>
+              <div class="staff-list" id="staff-occupancy-list" style="margin-top: 16px;"></div>
+            </div>
+          </div>
+
+          <!-- ZAKŁADKA 3: STOLIKI (TablesPage) -->
+          <div id="staff-tab-tables" class="staff-subview">
+            <div class="staff-page-header">
+              <div>
+                <h1>Stoliki</h1>
+                <p>Konfiguracja stolików, pojemności i stref sali.</p>
+              </div>
+            </div>
+
+            <form class="staff-form-grid" onsubmit="handleStaffCreateTable(event)">
+              <div class="staff-field">
+                <label for="st-table-number">Numer / Nazwa</label>
+                <input type="text" id="st-table-number" placeholder="np. Stolik #12" required />
+              </div>
+              <div class="staff-field">
+                <label for="st-table-capacity">Pojemność (os.)</label>
+                <select id="st-table-capacity">
+                  <option value="2">2 osoby</option>
+                  <option value="4" selected>4 osoby</option>
+                  <option value="6">6 osób</option>
+                  <option value="8">8 osób</option>
+                </select>
+              </div>
+              <div class="staff-field">
+                <label for="st-table-zone">Strefa</label>
+                <input type="text" id="st-table-zone" placeholder="np. Sala główna / Okno" value="Sala główna" />
+              </div>
+              <div class="staff-field">
+                <label for="st-table-status">Stan początkowy</label>
+                <select id="st-table-status">
+                  <option value="free">wolny</option>
+                  <option value="occupied">zajęty</option>
+                  <option value="reserved">zarezerwowany</option>
+                  <option value="dirty">do sprzątania</option>
+                </select>
+              </div>
+              <div class="staff-field">
+                <label for="st-table-posx">Pozycja X (%)</label>
+                <input type="number" id="st-table-posx" min="0" max="100" value="50" />
+              </div>
+              <div class="staff-field">
+                <label for="st-table-posy">Pozycja Y (%)</label>
+                <input type="number" id="st-table-posy" min="0" max="100" value="50" />
+              </div>
+              <div class="staff-field wide">
+                <button type="submit" class="btn-primary">Dodaj stolik</button>
+              </div>
+            </form>
+
+            <div class="staff-table-wrap">
+              <table class="staff-data">
+                <thead>
+                  <tr>
+                    <th>Numer</th>
+                    <th>Strefa</th>
+                    <th>Pojemność</th>
+                    <th>Wykryte osoby</th>
+                    <th>Pewność AI</th>
+                    <th>Stan</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-tables-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ZAKŁADKA 4: REZERWACJE (ReservationsPage) -->
+          <div id="staff-tab-reservations" class="staff-subview">
+            <div class="staff-page-header">
+              <div>
+                <h1>Rezerwacje</h1>
+                <p>Zarządzanie rezerwacjami na podstawie dostępności stolików (wspólna baza z Panelem Klienta).</p>
+              </div>
+            </div>
+
+            <form class="staff-form-grid" onsubmit="handleStaffCreateReservation(event)">
+              <div class="staff-field">
+                <label for="st-res-guest">Gość *</label>
+                <input type="text" id="st-res-guest" placeholder="np. Anna Kowalska" required />
+              </div>
+              <div class="staff-field">
+                <label for="st-res-phone">Telefon</label>
+                <input type="text" id="st-res-phone" placeholder="+48 500 100 200" />
+              </div>
+              <div class="staff-field">
+                <label for="st-res-email">E-mail</label>
+                <input type="email" id="st-res-email" placeholder="anna@example.com" />
+              </div>
+              <div class="staff-field">
+                <label for="st-res-party">Liczba osób</label>
+                <input type="number" id="st-res-party" min="1" max="12" value="2" required />
+              </div>
+              <div class="staff-field">
+                <label for="st-res-table">Stolik</label>
+                <select id="st-res-table"></select>
+              </div>
+              <div class="staff-field">
+                <label for="st-res-start">Początek *</label>
+                <input type="datetime-local" id="st-res-start" required />
+              </div>
+              <div class="staff-field">
+                <label for="st-res-end">Koniec *</label>
+                <input type="datetime-local" id="st-res-end" required />
+              </div>
+              <div class="staff-field wide">
+                <label for="st-res-notes">Notatki</label>
+                <textarea id="st-res-notes" rows="2" placeholder="np. Urodziny, stolik przy oknie"></textarea>
+              </div>
+              <div class="staff-field wide">
+                <button type="submit" class="btn-primary">Dodaj rezerwację</button>
+              </div>
+            </form>
+
+            <div class="staff-table-wrap">
+              <table class="staff-data">
+                <thead>
+                  <tr>
+                    <th>Gość</th>
+                    <th>Stolik</th>
+                    <th>Osoby</th>
+                    <th>Termin</th>
+                    <th>Stan</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-reservations-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ZAKŁADKA 5: KAMERY (CamerasPage) -->
+          <div id="staff-tab-cameras" class="staff-subview">
+            <div class="staff-page-header">
+              <div>
+                <h1>Kamery</h1>
+                <p>Źródła wideo oraz przełączniki modelu rozpoznającego zajętość.</p>
+              </div>
+            </div>
+
+            <form class="staff-form-grid" onsubmit="handleStaffCreateCamera(event)">
+              <div class="staff-field">
+                <label for="st-cam-name">Nazwa *</label>
+                <input type="text" id="st-cam-name" placeholder="np. Kamera sala 3" required />
+              </div>
+              <div class="staff-field">
+                <label for="st-cam-url">Adres strumienia</label>
+                <input type="text" id="st-cam-url" placeholder="rtsp://192.168.1.15/stream1" />
+              </div>
+              <div class="staff-field">
+                <label for="st-cam-zone">Strefa</label>
+                <input type="text" id="st-cam-zone" placeholder="np. Sala główna" value="Sala główna" />
+              </div>
+              <div class="staff-field">
+                <label for="st-cam-status">Stan</label>
+                <select id="st-cam-status">
+                  <option value="online">włączona</option>
+                  <option value="offline">wyłączona</option>
+                  <option value="error">błąd</option>
+                </select>
+              </div>
+              <div class="staff-field" style="justify-content: flex-end;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top: 22px;">
+                  <input type="checkbox" id="st-cam-model" checked style="width:auto;" />
+                  Model AI włączony
+                </label>
+              </div>
+              <div class="staff-field wide">
+                <button type="submit" class="btn-primary">Dodaj kamerę</button>
+              </div>
+            </form>
+
+            <div class="staff-table-wrap">
+              <table class="staff-data">
+                <thead>
+                  <tr>
+                    <th>Nazwa</th>
+                    <th>Strefa</th>
+                    <th>Strumień</th>
+                    <th>Model AI</th>
+                    <th>Stan</th>
+                    <th>Ostatni sygnał</th>
+                    <th>Akcje</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-cameras-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ZAKŁADKA 6: HISTORIA DETEKCJI (DetectionsPage) -->
+          <div id="staff-tab-detections" class="staff-subview">
+            <div class="staff-page-header">
+              <div>
+                <h1>Historia detekcji</h1>
+                <p>Zdarzenia z modelu AI rozpoznającego zajętość stolików.</p>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="btn-primary" onclick="simulateNewDetection()">
+                  + Symuluj odczyt YOLO
+                </button>
+                <button type="button" class="btn-secondary" onclick="renderStaffPanel()">
+                  Odśwież
+                </button>
+              </div>
+            </div>
+
+            <div class="staff-table-wrap">
+              <table class="staff-data">
+                <thead>
+                  <tr>
+                    <th>Czas</th>
+                    <th>Stolik</th>
+                    <th>Osoby</th>
+                    <th>Pewność</th>
+                    <th>Wynik</th>
+                    <th>Kamera</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-detections-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="stitch-footer">
+    Trackujemy Stoły &amp; StolikAI • System Rezerwacji Stolików z Wizją Komputerową YOLO • Projekt AGH (100% Lokalny SPA)
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/floorplan.js"></script>
+  <script src="js/client.js"></script>
+  <script src="js/staff.js"></script>
+</body>
+</html>

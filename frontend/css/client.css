@@ -1,0 +1,771 @@
+/* ==========================================================================
+   Plik: css/client.css — Widoki Klienta:
+   Wybór restauracji (Stitch Screen 1), Wizytówka lokalu, Menu Szefa Kuchni
+   oraz Formularz Rezerwacji na Dzień
+   ========================================================================== */
+
+/* ==========================================================================
+   STITCH EKRAN 1: WYBÓR RESTAURACJI (HERO + FILTRY + BAROMETR + KARTY + BENTO)
+   ========================================================================== */
+.stitch-hero {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 36px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.stitch-hero-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stitch-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stitch-hero-grid {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 28px;
+  align-items: end;
+}
+
+.stitch-hero h1 {
+  font-family: var(--font-headline);
+  font-size: 2.55rem;
+  line-height: 1.12;
+  color: var(--on-surface);
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+
+.stitch-hero h1 em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--primary);
+}
+
+.stitch-hero p {
+  font-size: 1.02rem;
+  color: var(--on-surface-variant);
+  max-width: 620px;
+}
+
+/* Pigułki filtrowania kuchni (Stitch Cuisine Pills) */
+.cuisine-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.cuisine-pill {
+  background: var(--surface-container-lowest);
+  color: var(--on-surface-variant);
+  border: 1px solid var(--outline-variant);
+  padding: 9px 16px;
+  border-radius: 999px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cuisine-pill:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.cuisine-pill.active {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(131, 49, 22, 0.2);
+}
+
+/* 4-kartowy Barometr Statystyczny LIVE (Stitch Statistical Barometer) */
+.barometer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--outline-variant);
+}
+
+.barometer-card {
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(220, 193, 185, 0.65);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+}
+
+.barometer-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+  margin-bottom: 4px;
+}
+
+.barometer-value {
+  font-family: var(--font-headline);
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.barometer-value.highlight-green {
+  color: #15803d;
+}
+
+.barometer-value.highlight-terracotta {
+  color: var(--primary);
+}
+
+/* Siatka 3 Kart Restauracji (Stitch Showcase Cards) */
+.restaurant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 44px;
+}
+
+.restaurant-card {
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(220, 193, 185, 0.7);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.restaurant-card-banner {
+  height: 215px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+}
+
+.restaurant-card-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(15, 10, 8, 0.35) 0%, rgba(15, 10, 8, 0.15) 45%, rgba(15, 10, 8, 0.85) 100%);
+}
+
+.banner-top-badges,
+.banner-bottom-info {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.yolo-floating-pill {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  color: var(--free-text);
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.rating-chip {
+  background: rgba(29, 27, 24, 0.82);
+  color: #fde68a;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.banner-feature-tag {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #ffdbd0;
+  background: rgba(29, 27, 24, 0.68);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.restaurant-card-body {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  gap: 16px;
+}
+
+.restaurant-card-body > div:first-child {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.rest-cuisine-overline {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.rest-card-title {
+  font-family: var(--font-headline);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--on-surface);
+  margin-bottom: 8px;
+  line-height: 1.25;
+}
+
+.rest-meta-line {
+  font-size: 0.84rem;
+  color: var(--on-surface-variant);
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rest-tagline {
+  font-size: 0.9rem;
+  color: var(--on-surface-variant);
+  margin-bottom: 14px;
+}
+
+/* Pasek postępu zajętości sali (Stitch Occupancy Progress Bar — zawsze na dole górnej sekcji) */
+.occupancy-meter-box {
+  margin-top: auto;
+  background: var(--surface-container-low);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--outline-variant);
+}
+
+.occupancy-meter-header {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--on-surface-variant);
+  margin-bottom: 6px;
+}
+
+.occupancy-bar-track {
+  width: 100%;
+  height: 7px;
+  background: var(--surface-container-highest);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.occupancy-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #16a34a 0%, var(--primary-container) 85%);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.card-actions-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--outline-variant);
+}
+
+.card-actions-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--on-surface-variant);
+}
+
+.card-option-btn {
+  width: 100%;
+  text-align: left;
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-md);
+  padding: 10px 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  transition: all 0.18s ease;
+  color: var(--on-surface);
+  font-family: inherit;
+}
+
+.card-option-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  transform: translateX(2px);
+}
+
+.card-option-btn.primary-opt {
+  background-color: var(--primary);
+  background-image: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(131, 49, 22, 0.18);
+}
+
+.card-option-btn.primary-opt:hover {
+  background-color: var(--primary-hover);
+  background-image: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 100%);
+  border-color: var(--primary-hover);
+  color: #ffffff;
+}
+
+.card-option-btn .opt-title {
+  display: block;
+  font-weight: 700;
+  font-size: 0.86rem;
+  line-height: 1.25;
+}
+
+.card-option-btn .opt-desc {
+  display: block;
+  font-size: 0.74rem;
+  opacity: 0.85;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.card-option-btn .opt-arrow {
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+/* Sekcja Bento "Jak działa wizja komputerowa YOLO?" (Stitch Bento Grid) */
+.stitch-bento-section {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+}
+
+.stitch-bento-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.stitch-bento-header h2 {
+  font-family: var(--font-headline);
+  font-size: 1.65rem;
+  color: var(--on-surface);
+}
+
+.bento-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.bento-card {
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(220, 193, 185, 0.7);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+}
+
+.bento-step-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--primary-fixed);
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.bento-card h3 {
+  font-family: var(--font-headline);
+  font-size: 1.12rem;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+}
+
+.bento-card p {
+  font-size: 0.88rem;
+  color: var(--on-surface-variant);
+}
+
+/* ==========================================================================
+   WIDOK 1: WIZYTÓWKA LOKALU (#view-home)
+   ========================================================================== */
+.hero-card {
+  background: var(--surface-container-lowest);
+  border-radius: var(--radius-xl);
+  padding: 34px;
+  border: 1px solid var(--outline-variant);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-badge {
+  display: inline-block;
+  background: var(--primary-fixed);
+  color: var(--primary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.74rem;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hero-card h1 {
+  font-family: var(--font-headline);
+  font-size: 2.2rem;
+  color: var(--on-surface);
+  margin-bottom: 10px;
+}
+
+.hero-card p {
+  color: var(--on-surface-variant);
+  font-size: 1rem;
+  max-width: 760px;
+  margin-bottom: 18px;
+}
+
+.meta-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.meta-pill {
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+}
+
+.cta-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.cta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.cta-card {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.cta-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.cta-icon {
+  font-size: 1.75rem;
+  margin-bottom: 12px;
+  display: inline-block;
+}
+
+.cta-card h3 {
+  font-family: var(--font-headline);
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  color: var(--on-surface);
+}
+
+.cta-card p {
+  color: var(--on-surface-variant);
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+}
+
+.cta-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   STITCH EKRAN 3: REZERWACJA NA DZIEŃ & KARTA DAŃ SZEFA KUCHNI
+   ========================================================================== */
+.filter-strip {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-xl);
+  padding: 20px 24px;
+  margin-bottom: 22px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  align-items: end;
+  box-shadow: var(--shadow-sm);
+}
+
+.step-confirm-card {
+  background: var(--surface-container-lowest);
+  border: 2px solid var(--primary);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+}
+
+.selected-table-banner {
+  background: var(--primary-light);
+  border: 1px solid var(--outline-variant);
+  color: var(--primary);
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  color: var(--on-surface-variant);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-sm);
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--on-surface);
+  background: var(--surface-container-low);
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(162, 72, 43, 0.14);
+}
+
+/* Karta Potwierdzenia Rezerwacji (#TK-XXXX) */
+.confirmation-box {
+  display: none;
+  margin-top: 18px;
+  background: var(--free-bg);
+  border: 1px solid var(--free-border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  color: var(--free-text);
+}
+
+.confirmation-box.visible {
+  display: block;
+}
+
+.confirmation-box h4 {
+  font-family: var(--font-headline);
+  font-size: 1.15rem;
+  margin-bottom: 8px;
+}
+
+.confirmation-details {
+  list-style: none;
+  margin-bottom: 12px;
+  font-size: 0.86rem;
+}
+
+.confirmation-details li {
+  margin-bottom: 4px;
+}
+
+.code-badge {
+  display: inline-block;
+  background: #ffffff;
+  border: 2px dashed var(--free-border);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--free-text);
+  margin-left: 6px;
+}
+
+/* Karta Dań Szefa Kuchni (Menu w stylu Stitch) */
+.menu-section {
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+}
+
+.menu-section h3 {
+  font-family: var(--font-headline);
+  font-size: 1.25rem;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--outline-variant);
+  color: var(--primary);
+}
+
+.menu-list {
+  display: grid;
+  gap: 12px;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--outline-variant);
+}
+
+.menu-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.menu-item-name {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: var(--on-surface);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dish-tag {
+  font-family: var(--font-mono);
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--primary-fixed);
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.menu-item-desc {
+  font-size: 0.85rem;
+  color: var(--on-surface-variant);
+  margin-top: 3px;
+}
+
+.menu-item-price {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.96rem;
+  color: var(--primary);
+  white-space: nowrap;
+  background: var(--primary-light);
+  padding: 4px 10px;
+  border-radius: 999px;
+}

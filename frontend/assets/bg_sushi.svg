@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="zenBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#090d16"/>
+      <stop offset="55%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <radialGradient id="redSun" cx="50%" cy="55%" r="35%">
+      <stop offset="0%" stop-color="#e11d48" stop-opacity="0.5"/>
+      <stop offset="65%" stop-color="#be123c" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#111827" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="400" fill="url(#zenBg)"/>
+  <rect width="1200" height="400" fill="url(#redSun)"/>
+
+  <!-- Czerwona tarcza słońca i brama Torii w tle -->
+  <circle cx="600" cy="220" r="135" fill="#e11d48" opacity="0.22"/>
+  <g fill="#0f172a" opacity="0.55">
+    <path d="M 450 165 Q 600 140 750 165 L 740 182 Q 600 160 460 182 Z"/>
+    <rect x="480" y="205" width="240" height="12" rx="4"/>
+    <rect x="505" y="175" width="16" height="225"/>
+    <rect x="679" y="175" width="16" height="225"/>
+  </g>
+
+  <!-- Japońskie lampiony Chochin -->
+  <g>
+    <line x1="200" y1="0" x2="200" y2="65" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="182" y="62" width="36" height="8" fill="#1e293b"/>
+    <ellipse cx="200" cy="105" rx="28" ry="38" fill="#e11d48" opacity="0.75" stroke="#fda4af" stroke-width="1.5"/>
+    <rect x="182" y="140" width="36" height="8" fill="#1e293b"/>
+
+    <line x1="1000" y1="0" x2="1000" y2="65" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="982" y="62" width="36" height="8" fill="#1e293b"/>
+    <ellipse cx="1000" cy="105" rx="28" ry="38" fill="#e11d48" opacity="0.75" stroke="#fda4af" stroke-width="1.5"/>
+    <rect x="982" y="140" width="36" height="8" fill="#1e293b"/>
+  </g>
+
+  <!-- Pędy bambusa po bokach -->
+  <g stroke="#10b981" stroke-width="5" opacity="0.22" stroke-linecap="round">
+    <line x1="75" y1="400" x2="85" y2="60"/>
+    <line x1="105" y1="400" x2="100" y2="110"/>
+    <line x1="1125" y1="400" x2="1115" y2="60"/>
+    <line x1="1095" y1="400" x2="1100" y2="110"/>
+  </g>
+</svg>
