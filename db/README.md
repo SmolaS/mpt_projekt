@@ -1,4 +1,4 @@
-# Baza danych: rezerwacje stolików + wykrywanie zajętości (PostgreSQL 16)
+# Baza danych: rezerwacje stolików + wykrywanie zajętości
 
 ## Uruchomienie
 
