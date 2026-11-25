@@ -50,21 +50,8 @@ SELECT record_occupancy_event(
   p_table_id => 3, p_state => 'occupied', p_confidence => 0.93, p_camera_id => 1,
   p_people_count => 2, p_model_version => 'yolo-v8-0.3', p_raw => '{"bbox": [..]}'::jsonb);
 ```
-Funkcja zapisuje zdarzenie i sama decyduje, czy zmienić stan (histereza, pewność, ręczne nadpisanie).
+Funkcja zapisuje zdarzenie i sama decyduje, czy zmienić stan - npewność, ręczne nadpisanie.
 
-## Decyzje projektowe
-
-* **Brak podwójnych rezerwacji gwarantuje baza**, a nie aplikacja: `EXCLUDE USING gist` na
-  `reservation_tables`. Sprawdzone testem z dwiema równoległymi sesjami.
-* **Metoda rozpoznawania stolika jest daną**: `table_detection_bindings.method`
-  (`roi_zone`, `qr_marker`, `table_number_ocr`, `tag`, `manual`). Zmiana metody nie wymaga migracji
-  i różne stoliki mogą używać różnych metod jednocześnie.
-* **Histereza w bazie** (`record_occupancy_event`): domyślnie 3 zgodne detekcje z rzędu i pewność ≥ 0.6.
-  Parametry da się zmienić argumentami funkcji.
-* **`occupied → free` daje `needs_cleaning`**, a z tego stanu wyprowadza stolik pracownik
-  (`set_table_state_manual`) albo nowa rezerwacja. Kamera sama go nie czyści.
-* **`manual_override`**: ręczny stan ma pierwszeństwo przed wizją, dopóki wizja go nie potwierdzi.
-* **RODO**: baza nie przechowuje obrazów, tylko wyniki detekcji (`raw` = wyjście modelu).
 
 ## Do zrobienia po stronie wdrożenia
 
