@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+      POSTGRES_DB: reservations
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Postgres wykonuje przy pierwszym starcie pustej bazy tylko pliki .sql leżące bezpośrednio
+      # w tym katalogu (podkatalogi są pomijane), alfabetycznie. Dlatego każdy plik osobno.
+      - ./migrations/001_core.sql:/docker-entrypoint-initdb.d/001_core.sql:ro
+      - ./migrations/002_reservations.sql:/docker-entrypoint-initdb.d/002_reservations.sql:ro
+      - ./migrations/003_vision.sql:/docker-entrypoint-initdb.d/003_vision.sql:ro
+      - ./migrations/004_api.sql:/docker-entrypoint-initdb.d/004_api.sql:ro
+      - ./seed.sql:/docker-entrypoint-initdb.d/005_seed.sql:ro
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+volumes:
+  pgdata:
