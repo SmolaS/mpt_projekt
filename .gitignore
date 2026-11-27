@@ -14,5 +14,12 @@ Desktop.ini
 tmp/
 temp/
 
-# Archives / unpack leftovers
-_mpt_unpack/
+# Python / FastAPI / Local DB
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.db
+.env
+

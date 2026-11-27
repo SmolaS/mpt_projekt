@@ -58,6 +58,54 @@
   border: 1px solid #fcd34d;
 }
 
+/* Pusty boks-placeholder pod przyszłą integrację modułu kamery YOLO */
+.camera-placeholder-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--surface-container-low),
+    var(--surface-container-low) 12px,
+    var(--surface-container) 12px,
+    var(--surface-container) 24px
+  );
+  border: 2px dashed var(--outline);
+  border-radius: var(--radius-lg);
+  color: var(--on-surface-variant);
+}
+
+.cam-ph-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--surface-container-lowest);
+  border: 1px dashed var(--outline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  flex-shrink: 0;
+}
+
+.cam-ph-title {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--on-surface);
+  margin-bottom: 4px;
+}
+
+.cam-ph-desc {
+  font-size: 0.85rem;
+  color: var(--on-surface-variant);
+  line-height: 1.45;
+}
+
 /* Układ 8 kolumn (Plan Sali) + 4 kolumny (Inspektor Stolika LIVE) */
 .live-workspace-grid {
   display: grid;

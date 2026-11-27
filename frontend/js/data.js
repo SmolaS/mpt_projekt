@@ -1,6 +1,7 @@
 // ==========================================================================
-// Plik: js/data.js — Słownik statusów, baza danych 3 restauracji,
-// współdzielony stan aplikacji oraz funkcje pomocnicze daty/czasu
+// Plik: js/data.js — Słownik statusów, makieta lokali i menu (bez sztucznych
+// rezerwacji, bez podpiętych kamer i bez udawanych odczytów YOLO).
+// Wszystkie rezerwacje i statusy stolików pobierane są z Backendu FastAPI (RAM).
 // ==========================================================================
 
 const STATUS_LABELS = {
@@ -28,7 +29,7 @@ function statusBadgeHTML(status) {
   return `<span class="staff-badge ${status}">${statusLabel(status)}</span>`;
 }
 
-// Wspólna baza danych 3 restauracji (łączy Panel Klienta w stylu Google Stitch oraz Panel Pracownika StolikAI)
+// Dane statyczne lokali (opisy i menu) + puste tablice rezerwacji, kamer i detekcji
 const RESTAURANTS_DATA = {
   "bistro-agh": {
     id: "bistro-agh",
@@ -40,7 +41,7 @@ const RESTAURANTS_DATA = {
     address: "ul. Reymonta 17, Kraków",
     hours: "12:00 – 22:00",
     bannerImage: "assets/bg_bistro.svg",
-    tagline: "Historyczna przeszklona kopuła, dębowy parkiet, ciepłe światło lamp Edison i podgląd wolnych stolików na żywo.",
+    tagline: "Historyczna przeszklona kopuła, dębowy parkiet, ciepłe światło lamp Edison i interaktywny rzut sali.",
     menu: {
       przystawki: [
         { name: "Tatar wołowy z polędwicy", tag: "Bestseller", desc: "Szalotka, ogórek kiszony, grzybki marynowane, żółtko, pieczywo żytnie (180g)", price: "42 zł" },
@@ -59,37 +60,16 @@ const RESTAURANTS_DATA = {
       ]
     },
     tables: [
-      { id: 1, name: "Stolik #1", seats: 2, zone: "Witryna Okienna", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["19:00"], seats_detected: 0, confidence: 0.94, pos_x: 15, pos_y: 18, is_active: true },
-      { id: 2, name: "Stolik #2", seats: 2, zone: "Witryna Okienna", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 2 os.)", bookedSlots: ["18:00"], seats_detected: 2, confidence: 0.96, pos_x: 35, pos_y: 18, is_active: true },
-      { id: 3, name: "Stolik #3", seats: 2, zone: "Witryna Okienna", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.91, pos_x: 55, pos_y: 18, is_active: true },
-      { id: 4, name: "Stolik #4", seats: 2, zone: "Witryna Okienna", liveStatus: "reserved", liveLabel: "Rezerwacja w systemie", bookedSlots: ["18:00", "20:00"], seats_detected: 0, confidence: 0.89, pos_x: 75, pos_y: 18, is_active: true },
-      { id: 5, name: "Stolik #5", seats: 4, zone: "Rotunda Pod Kopułą", liveStatus: "dirty", liveLabel: "Do sprzątania", bookedSlots: ["17:00"], seats_detected: 0, confidence: 0.87, pos_x: 20, pos_y: 48, is_active: true },
-      { id: 6, name: "Stolik #6", seats: 4, zone: "Rotunda Pod Kopułą", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 4 os.)", bookedSlots: ["18:00"], seats_detected: 4, confidence: 0.95, pos_x: 45, pos_y: 48, is_active: true },
-      { id: 7, name: "Stolik #7", seats: 6, zone: "Rotunda Pod Kopułą", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["20:00"], seats_detected: 0, confidence: 0.93, pos_x: 70, pos_y: 48, is_active: true },
-      { id: 8, name: "Stół #8 (Pod Kopułą VIP)", seats: 8, zone: "Centrum Kopuły", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 7 os.)", bookedSlots: ["19:00"], seats_detected: 7, confidence: 0.98, pos_x: 50, pos_y: 65, is_active: true },
-      { id: 9, name: "Stolik #9", seats: 4, zone: "Przy Winiarni", liveStatus: "reserved", liveLabel: "Rezerwacja w systemie", bookedSlots: ["18:00"], seats_detected: 0, confidence: 0.92, pos_x: 25, pos_y: 80, is_active: true },
-      { id: 10, name: "Stolik #10", seats: 6, zone: "Przy Winiarni", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.9, pos_x: 55, pos_y: 80, is_active: true },
-      { id: 11, name: "Stolik #11", seats: 4, zone: "Kącik Kameralny", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.91, pos_x: 82, pos_y: 80, is_active: true }
+      { id: 1, name: "Stolik 1", seats: 2, zone: "Witryna Okienna", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 2, name: "Stolik 2", seats: 2, zone: "Witryna Okienna", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 3, name: "Stolik 3", seats: 4, zone: "Rotunda Pod Kopułą", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 4, name: "Stolik 4", seats: 4, zone: "Przy Winiarni", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 5, name: "Stolik 5", seats: 6, zone: "Rotunda Pod Kopułą", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 6, name: "Stolik 6", seats: 8, zone: "Centrum Kopuły", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true }
     ],
-    cameras: [
-      { id: 1, name: "Kamera Kopuła 1 (Witryna)", stream_url: "rtsp://192.168.1.10/stream1", zone_name: "Witryna Okienna", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:30:00.000Z" },
-      { id: 2, name: "Kamera Kopuła 2 (Rotunda)", stream_url: "rtsp://192.168.1.11/stream1", zone_name: "Rotunda Pod Kopułą", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:30:00.000Z" },
-      { id: 3, name: "Kamera Winiarnia", stream_url: "rtsp://192.168.1.12/stream1", zone_name: "Przy Winiarni", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:29:00.000Z" },
-      { id: 4, name: "Kamera VIP", stream_url: "rtsp://192.168.1.13/stream1", zone_name: "Centrum Kopuły", status: "offline", model_enabled: false, last_heartbeat: "2026-11-03T16:00:00.000Z" }
-    ],
-    reservations: [
-      { id: 1, guest_name: "Anna Kowalska", guest_phone: "+48 500 100 200", guest_email: "anna@example.com", party_size: 2, table_id: 4, table_number: "Stolik #4", starts_at: "2026-11-03T20:00:00.000Z", ends_at: "2026-11-03T22:00:00.000Z", status: "confirmed", notes: "Przy oknie", cancel_code: "TK-9M2X" },
-      { id: 2, guest_name: "Marek Nowak", guest_phone: "+48 600 200 300", guest_email: "marek@nowak.pl", party_size: 4, table_id: 9, table_number: "Stolik #9", starts_at: "2026-11-03T20:30:00.000Z", ends_at: "2026-11-03T22:30:00.000Z", status: "confirmed", notes: "Urodziny — prośba o świeczkę", cancel_code: "TK-7T4L" },
-      { id: 3, guest_name: "Firma SoftTech", guest_phone: "+48 22 111 22 33", guest_email: "biuro@softtech.pl", party_size: 6, table_id: 7, table_number: "Stolik #7", starts_at: "2026-11-03T21:00:00.000Z", ends_at: "2026-11-03T23:00:00.000Z", status: "confirmed", notes: "Faktura VAT", cancel_code: "TK-3N8B" },
-      { id: 4, guest_name: "Laura Wiśniewska", guest_phone: "+48 512 345 678", guest_email: "", party_size: 2, table_id: 2, table_number: "Stolik #2", starts_at: "2026-11-03T18:30:00.000Z", ends_at: "2026-11-03T20:30:00.000Z", status: "seated", notes: "", cancel_code: "TK-5V9C" }
-    ],
-    detections: [
-      { id: 1, table_id: 2, table_number: "Stolik #2", camera_id: 1, seats_detected: 2, occupied: true, confidence: 0.96, detected_at: "2026-11-03T19:32:00.000Z" },
-      { id: 2, table_id: 1, table_number: "Stolik #1", camera_id: 1, seats_detected: 0, occupied: false, confidence: 0.94, detected_at: "2026-11-03T19:31:55.000Z" },
-      { id: 3, table_id: 6, table_number: "Stolik #6", camera_id: 2, seats_detected: 4, occupied: true, confidence: 0.95, detected_at: "2026-11-03T19:31:50.000Z" },
-      { id: 4, table_id: 8, table_number: "Stół #8 (Pod Kopułą VIP)", camera_id: 2, seats_detected: 7, occupied: true, confidence: 0.98, detected_at: "2026-11-03T19:31:45.000Z" },
-      { id: 5, table_id: 5, table_number: "Stolik #5", camera_id: 2, seats_detected: 0, occupied: false, confidence: 0.87, detected_at: "2026-11-03T19:31:40.000Z" }
-    ]
+    cameras: [],
+    reservations: [],
+    detections: []
   },
   "trattoria-roma": {
     id: "trattoria-roma",
@@ -118,28 +98,16 @@ const RESTAURANTS_DATA = {
       ]
     },
     tables: [
-      { id: 1, name: "Stolik #1", seats: 2, zone: "Arkada Włoska", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 2 os.)", bookedSlots: ["18:00"], seats_detected: 2, confidence: 0.93, pos_x: 20, pos_y: 20, is_active: true },
-      { id: 2, name: "Stolik #2", seats: 2, zone: "Arkada Włoska", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.91, pos_x: 50, pos_y: 20, is_active: true },
-      { id: 3, name: "Stolik #3", seats: 2, zone: "Arkada Włoska", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["19:00"], seats_detected: 0, confidence: 0.9, pos_x: 80, pos_y: 20, is_active: true },
-      { id: 4, name: "Stolik #4", seats: 4, zone: "Blisko Pieca", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 3 os.)", bookedSlots: [], seats_detected: 3, confidence: 0.95, pos_x: 20, pos_y: 50, is_active: true },
-      { id: 5, name: "Stolik #5", seats: 4, zone: "Szachownica Środek", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["18:00"], seats_detected: 0, confidence: 0.92, pos_x: 50, pos_y: 50, is_active: true },
-      { id: 6, name: "Stolik #6", seats: 4, zone: "Szachownica Środek", liveStatus: "reserved", liveLabel: "Rezerwacja w systemie", bookedSlots: ["18:00", "20:00"], seats_detected: 0, confidence: 0.89, pos_x: 80, pos_y: 50, is_active: true },
-      { id: 7, name: "Stolik #7", seats: 6, zone: "Pergola Winorośli", liveStatus: "dirty", liveLabel: "Do sprzątania", bookedSlots: [], seats_detected: 0, confidence: 0.88, pos_x: 25, pos_y: 78, is_active: true },
-      { id: 8, name: "Stolik #8", seats: 6, zone: "Pergola Winorośli", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 5 os.)", bookedSlots: ["19:00"], seats_detected: 5, confidence: 0.96, pos_x: 55, pos_y: 78, is_active: true },
-      { id: 9, name: "Stolik #9", seats: 4, zone: "Ogród Zimowy", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.94, pos_x: 80, pos_y: 78, is_active: true },
-      { id: 10, name: "Stół #10 (La Famiglia)", seats: 8, zone: "Stół Biesiadny Włoski", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["20:00"], seats_detected: 0, confidence: 0.97, pos_x: 50, pos_y: 90, is_active: true }
+      { id: 7, name: "Stolik 1", seats: 2, zone: "Arkada Włoska", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 8, name: "Stolik 2", seats: 2, zone: "Arkada Włoska", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 9, name: "Stolik 3", seats: 4, zone: "Blisko Pieca", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 10, name: "Stolik 4", seats: 4, zone: "Szachownica Środek", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 11, name: "Stolik 5", seats: 6, zone: "Pergola Winorośli", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 12, name: "Stolik 6", seats: 8, zone: "Stół Biesiadny La Famiglia", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true }
     ],
-    cameras: [
-      { id: 1, name: "Kamera Piec & Sala", stream_url: "rtsp://192.168.2.10/stream1", zone_name: "Blisko Pieca", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:30:00.000Z" },
-      { id: 2, name: "Kamera Arkady", stream_url: "rtsp://192.168.2.11/stream1", zone_name: "Arkada Włoska", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:30:00.000Z" }
-    ],
-    reservations: [
-      { id: 1, guest_name: "Marco Rossi", guest_phone: "+48 601 234 567", guest_email: "marco@roma.it", party_size: 4, table_id: 6, table_number: "Stolik #6", starts_at: "2026-11-03T20:00:00.000Z", ends_at: "2026-11-03T22:00:00.000Z", status: "confirmed", notes: "Wino Chianti Classico", cancel_code: "TK-4M8P" }
-    ],
-    detections: [
-      { id: 1, table_id: 1, table_number: "Stolik #1", camera_id: 2, seats_detected: 2, occupied: true, confidence: 0.93, detected_at: "2026-11-03T19:30:00.000Z" },
-      { id: 2, table_id: 8, table_number: "Stolik #8", camera_id: 1, seats_detected: 5, occupied: true, confidence: 0.96, detected_at: "2026-11-03T19:29:30.000Z" }
-    ]
+    cameras: [],
+    reservations: [],
+    detections: []
   },
   "sushi-zen": {
     id: "sushi-zen",
@@ -151,7 +119,7 @@ const RESTAURANTS_DATA = {
     address: "ul. Kazimierza Wielkiego 40, Kraków",
     hours: "12:00 – 21:30",
     bannerImage: "assets/bg_sushi.svg",
-    tagline: "Ciemne maty Tatami, czerwone lampiony Chochin, otwarty bar Sushi Master i automatyczna detekcja miejsc.",
+    tagline: "Ciemne maty Tatami, czerwone lampiony Chochin i otwarty bar Sushi Master.",
     menu: {
       przystawki: [
         { name: "Edamame z solą morską Maldon", tag: "Wegańskie", desc: "Gotowane na parze strąki młodej soi z kryształkami soli (150g)", price: "19 zł" },
@@ -168,28 +136,16 @@ const RESTAURANTS_DATA = {
       ]
     },
     tables: [
-      { id: 1, name: "Boks #1", seats: 2, zone: "Przy Barze Sushi", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.95, pos_x: 15, pos_y: 20, is_active: true },
-      { id: 2, name: "Boks #2", seats: 2, zone: "Przy Barze Sushi", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 2 os.)", bookedSlots: ["18:00"], seats_detected: 2, confidence: 0.97, pos_x: 38, pos_y: 20, is_active: true },
-      { id: 3, name: "Boks #3", seats: 2, zone: "Przy Barze Sushi", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.92, pos_x: 62, pos_y: 20, is_active: true },
-      { id: 4, name: "Boks #4", seats: 2, zone: "Przy Barze Sushi", liveStatus: "reserved", liveLabel: "Rezerwacja w systemie", bookedSlots: ["18:00"], seats_detected: 0, confidence: 0.9, pos_x: 85, pos_y: 20, is_active: true },
-      { id: 5, name: "Stolik #5", seats: 4, zone: "Aleja Lampionów", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["19:00"], seats_detected: 0, confidence: 0.93, pos_x: 25, pos_y: 50, is_active: true },
-      { id: 6, name: "Stolik #6", seats: 4, zone: "Aleja Lampionów", liveStatus: "occupied", liveLabel: "Zajęty (YOLO: 4 os.)", bookedSlots: [], seats_detected: 4, confidence: 0.96, pos_x: 55, pos_y: 50, is_active: true },
-      { id: 7, name: "Stolik #7", seats: 4, zone: "Ogród Bambusowy", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.91, pos_x: 82, pos_y: 50, is_active: true },
-      { id: 8, name: "Stolik #8", seats: 6, zone: "Mata Tatami Wschód", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: ["18:00"], seats_detected: 0, confidence: 0.94, pos_x: 28, pos_y: 80, is_active: true },
-      { id: 9, name: "Stolik #9", seats: 6, zone: "Mata Tatami Zachód", liveStatus: "reserved", liveLabel: "Rezerwacja w systemie", bookedSlots: ["19:00"], seats_detected: 0, confidence: 0.89, pos_x: 60, pos_y: 80, is_active: true },
-      { id: 10, name: "Stół #10 (Omakase VIP)", seats: 8, zone: "Prywatna Sala Tatami", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: 0, confidence: 0.98, pos_x: 85, pos_y: 80, is_active: true }
+      { id: 13, name: "Boks 1", seats: 2, zone: "Przy Barze Sushi", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 14, name: "Boks 2", seats: 2, zone: "Przy Barze Sushi", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 15, name: "Stolik 3", seats: 4, zone: "Aleja Lampionów", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 16, name: "Stolik 4", seats: 4, zone: "Ogród Bambusowy", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 17, name: "Stolik 5", seats: 6, zone: "Mata Tatami Wschód", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true },
+      { id: 18, name: "Stolik 6", seats: 8, zone: "Prywatna Sala Omakase", liveStatus: "free", liveLabel: "Wolny — Kliknij", bookedSlots: [], seats_detected: null, confidence: null, is_active: true }
     ],
-    cameras: [
-      { id: 1, name: "Kamera Bar Sushi", stream_url: "rtsp://192.168.3.10/stream1", zone_name: "Przy Barze Sushi", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:30:00.000Z" },
-      { id: 2, name: "Kamera Sala Tatami", stream_url: "rtsp://192.168.3.11/stream1", zone_name: "Mata Tatami Wschód", status: "online", model_enabled: true, last_heartbeat: "2026-11-03T19:30:00.000Z" }
-    ],
-    reservations: [
-      { id: 1, guest_name: "Kenji Takahashi", guest_phone: "+48 509 888 777", guest_email: "kenji@tokyo.jp", party_size: 2, table_id: 4, table_number: "Boks #4", starts_at: "2026-11-03T20:00:00.000Z", ends_at: "2026-11-03T22:00:00.000Z", status: "confirmed", notes: "Zestaw Omakase", cancel_code: "TK-8K2M" }
-    ],
-    detections: [
-      { id: 1, table_id: 2, table_number: "Boks #2", camera_id: 1, seats_detected: 2, occupied: true, confidence: 0.97, detected_at: "2026-11-03T19:31:00.000Z" },
-      { id: 2, table_id: 6, table_number: "Stolik #6", camera_id: 2, seats_detected: 4, occupied: true, confidence: 0.96, detected_at: "2026-11-03T19:30:20.000Z" }
-    ]
+    cameras: [],
+    reservations: [],
+    detections: []
   }
 };
 
