@@ -1,9 +1,19 @@
 // ==========================================================================
 // Plik: js/client.js — Nawigacja SPA, wybór restauracji, Inspektor Stolika
-// LIVE, Karta Dań oraz obsługa rezerwacji klienta (LIVE i na dzień)
+// LIVE, Karta Dań oraz obsługa rezerwacji klienta z zapisem do FastAPI
 // ==========================================================================
 
+let lastClientReservations = {
+  live: null,
+  calendar: null
+};
+
 function navigateTo(viewId) {
+  // Zabezpieczenie panelu pracownika przed wejściem bez zalogowania (admin / admin)
+  if (viewId === "view-staff-panel" && typeof isStaffAuthenticated === "function" && !isStaffAuthenticated()) {
+    viewId = "view-staff-login";
+  }
+
   const isStaffView = viewId === "view-staff-login" || viewId === "view-staff-panel";
   const wasInRestaurant = currentRestaurantId !== null;
 
@@ -29,7 +39,10 @@ function navigateTo(viewId) {
   } else {
     document.body.removeAttribute("data-staff-mode");
     if (staffBtn) {
-      staffBtn.textContent = "🔒 Panel Pracownika";
+      staffBtn.textContent =
+        typeof isStaffAuthenticated === "function" && isStaffAuthenticated()
+          ? "📊 Panel Pracownika (Aktywny)"
+          : "🔒 Panel Pracownika";
       staffBtn.setAttribute("onclick", "openStaffLogin()");
     }
   }
@@ -86,10 +99,12 @@ function filterCuisine(cuisineType) {
   renderRestaurantsList();
 }
 
-function selectRestaurant(restaurantId, targetView = "view-home") {
+async function selectRestaurant(restaurantId, targetView = "view-home") {
   if (!RESTAURANTS_DATA[restaurantId]) return;
   currentRestaurantId = restaurantId;
   staffRestaurantId = restaurantId;
+
+  await syncPublicTablesFromApi(restaurantId);
 
   const rest = RESTAURANTS_DATA[restaurantId];
   const firstFree = rest.tables.find((t) => t.liveStatus === "free" && t.is_active !== false) || rest.tables[0];
@@ -152,21 +167,27 @@ function updateLiveConfirmationStepVisibility() {
       t.liveStatus === "free"
         ? "DOSTĘPNY OD ZARAZ"
         : t.liveStatus === "occupied"
-        ? "ZAJĘTY (KAMERA YOLO)"
+        ? "ZAJĘTY"
         : statusLabel(t.liveStatus).toUpperCase();
   }
 
   if (descEl) {
     descEl.textContent =
       t.liveStatus === "free"
-        ? "Stolik jest w tej chwili wolny. Możesz zablokować go ekspresowo na przyjście w ciągu 15–60 minut."
-        : `Kamera YOLO / system wskazuje status: ${statusLabel(t.liveStatus)}. Możesz wybrać inny zielony stolik lub zarezerwować ten stolik na późniejszy dzień.`;
+        ? "Stolik jest wolny w pamięci backendu FastAPI. Możesz zablokować go ekspresowo na przyjście w ciągu 15–60 minut."
+        : `Backend FastAPI zwraca status: ${statusLabel(t.liveStatus)}. Wybierz inny zielony stolik lub zarezerwuj ten stolik na późniejszy dzień.`;
   }
 
-  if (confEl) confEl.textContent = `${Math.round((t.confidence || 0.92) * 100)}% pewności`;
+  if (confEl) {
+    confEl.textContent =
+      t.confidence != null ? `${Math.round(t.confidence * 100)}% pewności` : "Brak kamery (—)";
+  }
   if (seatsEl) seatsEl.textContent = `${t.seats}-osobowy`;
   if (zoneEl) zoneEl.textContent = t.zone || "Sala główna";
-  if (detectedEl) detectedEl.textContent = `${t.seats_detected || 0} / ${t.seats} os.`;
+  if (detectedEl) {
+    detectedEl.textContent =
+      t.seats_detected != null ? `${t.seats_detected} / ${t.seats} os.` : "Brak kamery (—)";
+  }
 
   if (t.liveStatus === "free") {
     selectedTableForLive = t;
@@ -199,9 +220,14 @@ function jumpFromInspectorToCalendarBooking() {
   updateBookingFloorFilter();
 }
 
-function updateBookingFloorFilter() {
+async function updateBookingFloorFilter() {
   const rest = RESTAURANTS_DATA[currentRestaurantId];
   if (!rest) return;
+
+  if (BACKEND_ONLINE) {
+    await syncPublicTablesFromApi(currentRestaurantId);
+  }
+
   const filterTime = document.getElementById("booking-time").value;
   const requiredSeats = parseInt(document.getElementById("booking-guests").value, 10) || 2;
 
@@ -234,7 +260,7 @@ function chooseTableForBooking(tableId) {
 
 function updateConfirmationStepVisibility() {
   const bannerInfo = document.getElementById("selected-table-summary-text");
-  const dateVal = document.getElementById("booking-date") ? document.getElementById("booking-date").value : "2026-11-05";
+  const dateVal = document.getElementById("booking-date") ? document.getElementById("booking-date").value : getTomorrowDateStr();
   const timeVal = document.getElementById("booking-time") ? document.getElementById("booking-time").value : "18:00";
   const guestsSelect = document.getElementById("booking-guests");
   const guestsLabel = guestsSelect ? guestsSelect.options[guestsSelect.selectedIndex].text : "2 osoby";
@@ -311,18 +337,13 @@ function renderRestaurantsList() {
 
   let totalTables = 0;
   let totalFree = 0;
-  let confidenceSum = 0;
 
   allRests.forEach((r) => {
     const active = r.tables.filter((t) => t.is_active !== false);
     totalTables += active.length;
     totalFree += active.filter((t) => t.liveStatus === "free").length;
-    active.forEach((t) => {
-      confidenceSum += t.confidence || 0.92;
-    });
   });
 
-  const avgConf = totalTables ? ((confidenceSum / totalTables) * 100).toFixed(1) : "94.2";
   const barometerEl = document.getElementById("hub-barometer-stats");
   if (barometerEl) {
     barometerEl.innerHTML = `
@@ -331,15 +352,15 @@ function renderRestaurantsList() {
         <div class="barometer-value">${allRests.length} restauracje</div>
       </div>
       <div class="barometer-card">
-        <div class="barometer-label">Detekcja krzeseł YOLO</div>
-        <div class="barometer-value highlight-terracotta">${avgConf}% pewności</div>
+        <div class="barometer-label">Moduł kamery YOLO</div>
+        <div class="barometer-value" style="font-size:1.15rem; color:var(--on-surface-variant);">Niepodpięty (Placeholder)</div>
       </div>
       <div class="barometer-card">
-        <div class="barometer-label">Średni czas wizyty</div>
-        <div class="barometer-value">85 min</div>
+        <div class="barometer-label">Warstwa danych API</div>
+        <div class="barometer-value highlight-terracotta" style="font-size:1.15rem;">Pamięć RAM (tymczasowa)</div>
       </div>
       <div class="barometer-card">
-        <div class="barometer-label">Wolne stoliki teraz (LIVE)</div>
+        <div class="barometer-label">Wolne stoliki (z API)</div>
         <div class="barometer-value highlight-green">${totalFree} / ${totalTables} wolnych</div>
       </div>
     `;
@@ -366,12 +387,12 @@ function renderRestaurantsList() {
           <div class="banner-top-badges">
             <span class="yolo-floating-pill">
               <span class="pulse-dot"></span>
-              ${freeCount} z ${active.length} wolnych (LIVE YOLO)
+              ${freeCount} z ${active.length} wolnych (z API)
             </span>
             <span class="rating-chip">★ ${r.rating || "4.9"}</span>
           </div>
           <div class="banner-bottom-info">
-            <span class="banner-feature-tag">${r.interiorFeature || "Rzut Sali LIVE"}</span>
+            <span class="banner-feature-tag">${r.interiorFeature || "Rzut Sali"}</span>
           </div>
         </div>
 
@@ -387,7 +408,7 @@ function renderRestaurantsList() {
 
             <div class="occupancy-meter-box">
               <div class="occupancy-meter-header">
-                <span>OBŁOŻENIE SALI (KAMERA YOLO)</span>
+                <span>ZAREZERWOWANE / ZAJĘTE (API)</span>
                 <span>${occupancyPct}% ZAJĘTYCH</span>
               </div>
               <div class="occupancy-bar-track">
@@ -430,7 +451,8 @@ function renderRestaurantsList() {
     .join("");
 }
 
-function handleLiveBookingSubmit(event) {
+// Rezerwacja ekspresowa LIVE (POST /api/v1/reservations z flagą express_live: true)
+async function handleLiveBookingSubmit(event) {
   event.preventDefault();
 
   if (!selectedTableForLive) {
@@ -445,34 +467,63 @@ function handleLiveBookingSubmit(event) {
   const nameVal = document.getElementById("live-booking-name").value.trim();
   const emailVal = document.getElementById("live-booking-email").value.trim();
   const phoneVal = document.getElementById("live-booking-phone").value.trim();
-
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let suffix = "";
-  for (let i = 0; i < 4; i++) {
-    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  const cancelCode = `TK-${suffix}`;
-
   const bookedTable = selectedTableForLive;
-  bookedTable.liveStatus = "reserved";
-  bookedTable.liveLabel = `Zarezerwowany (${arrivalText})`;
 
-  const startIso = new Date(Date.now() + offsetMinutes * 60 * 1000).toISOString();
-  const endIso = new Date(Date.now() + (offsetMinutes + 120) * 60 * 1000).toISOString();
-  rest.reservations.unshift({
-    id: Date.now(),
-    guest_name: nameVal,
-    guest_phone: phoneVal,
-    guest_email: emailVal,
-    party_size: bookedTable.seats,
-    table_id: bookedTable.id,
-    table_number: bookedTable.name,
-    starts_at: startIso,
-    ends_at: endIso,
-    status: "confirmed",
-    notes: `Szybka rezerwacja LIVE (${arrivalText})`,
-    cancel_code: cancelCode
-  });
+  let displayCode = "";
+
+  if (await checkBackendHealth()) {
+    try {
+      const startIso = new Date(Date.now() + offsetMinutes * 60 * 1000).toISOString();
+      const created = await apiCreateReservation({
+        restaurant_id: currentRestaurantId,
+        table_id: bookedTable.id,
+        guest_name: nameVal,
+        guest_email: emailVal,
+        guest_phone: phoneVal || null,
+        party_size: bookedTable.seats,
+        starts_at: startIso,
+        notes: `Szybka rezerwacja LIVE (${arrivalText})`,
+        express_live: true
+      });
+
+      lastClientReservations.live = {
+        id: created.id,
+        token: created.cancel_token
+      };
+      displayCode = `#ID-${created.id} (token: ${created.cancel_token.slice(0, 8)}…)`;
+      await syncPublicTablesFromApi(currentRestaurantId);
+    } catch (err) {
+      alert(`Nie udało się zapisać rezerwacji LIVE w API:\n${err.message}`);
+      return;
+    }
+  } else {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let suffix = "";
+    for (let i = 0; i < 4; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    const cancelCode = `TK-${suffix}`;
+    displayCode = `#${cancelCode}`;
+    lastClientReservations.live = { id: Date.now(), token: null, localTableId: bookedTable.id };
+
+    bookedTable.liveStatus = "reserved";
+    bookedTable.liveLabel = `Zarezerwowany (${arrivalText})`;
+
+    const startIso = new Date(Date.now() + offsetMinutes * 60 * 1000).toISOString();
+    const endIso = new Date(Date.now() + (offsetMinutes + 90) * 60 * 1000).toISOString();
+    rest.reservations.unshift({
+      id: lastClientReservations.live.id,
+      guest_name: nameVal,
+      guest_phone: phoneVal,
+      guest_email: emailVal,
+      party_size: bookedTable.seats,
+      table_id: bookedTable.id,
+      table_number: bookedTable.name,
+      starts_at: startIso,
+      ends_at: endIso,
+      status: "confirmed",
+      notes: `Szybka rezerwacja LIVE (${arrivalText})`,
+      cancel_code: cancelCode
+    });
+  }
 
   const summaryList = document.getElementById("live-confirmation-summary-list");
   if (summaryList) {
@@ -485,19 +536,18 @@ function handleLiveBookingSubmit(event) {
   }
 
   const codeEl = document.getElementById("live-confirmation-code");
-  if (codeEl) codeEl.textContent = `#${cancelCode}`;
+  if (codeEl) codeEl.textContent = displayCode;
 
   renderAllFloorPlans();
   renderRestaurantsList();
   updateLiveConfirmationStepVisibility();
 
   const confirmBox = document.getElementById("live-booking-confirmation");
-  if (confirmBox) {
-    confirmBox.classList.add("visible");
-  }
+  if (confirmBox) confirmBox.classList.add("visible");
 }
 
-function handleBookingSubmit(event) {
+// Rezerwacja kalendarzowa na wybrany dzień (POST /api/v1/reservations)
+async function handleBookingSubmit(event) {
   event.preventDefault();
 
   if (!selectedTableForBooking) {
@@ -515,42 +565,71 @@ function handleBookingSubmit(event) {
   const emailVal = document.getElementById("booking-email").value.trim();
   const phoneVal = document.getElementById("booking-phone").value.trim();
   const notesVal = document.getElementById("booking-notes").value.trim() || "Brak uwag";
+  const chosenTable = selectedTableForBooking;
 
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let suffix = "";
-  for (let i = 0; i < 4; i++) {
-    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  let displayCode = "";
+
+  if (await checkBackendHealth()) {
+    try {
+      const startsAtAware = buildAwareISO(dateVal, timeVal);
+      const created = await apiCreateReservation({
+        restaurant_id: currentRestaurantId,
+        table_id: chosenTable.id,
+        guest_name: nameVal,
+        guest_email: emailVal,
+        guest_phone: phoneVal || null,
+        party_size: partySizeNum,
+        starts_at: startsAtAware,
+        notes: notesVal,
+        express_live: false
+      });
+
+      lastClientReservations.calendar = {
+        id: created.id,
+        token: created.cancel_token
+      };
+      displayCode = `#ID-${created.id} • Token: ${created.cancel_token.slice(0, 10)}…`;
+      await syncPublicTablesFromApi(currentRestaurantId);
+    } catch (err) {
+      alert(`Nie udało się zapisać rezerwacji w API:\n${err.message}`);
+      return;
+    }
+  } else {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let suffix = "";
+    for (let i = 0; i < 4; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+    const cancelCode = `TK-${suffix}`;
+    displayCode = `#${cancelCode}`;
+    lastClientReservations.calendar = { id: Date.now(), token: null, slot: timeVal, localTableId: chosenTable.id };
+
+    if (!chosenTable.bookedSlots.includes(timeVal)) {
+      chosenTable.bookedSlots.push(timeVal);
+    }
+
+    const startDate = new Date(`${dateVal}T${timeVal}:00`);
+    const endDate = new Date(startDate.getTime() + 90 * 60 * 1000);
+    rest.reservations.unshift({
+      id: lastClientReservations.calendar.id,
+      guest_name: nameVal,
+      guest_phone: phoneVal,
+      guest_email: emailVal,
+      party_size: partySizeNum,
+      table_id: chosenTable.id,
+      table_number: chosenTable.name,
+      starts_at: startDate.toISOString(),
+      ends_at: endDate.toISOString(),
+      status: "confirmed",
+      notes: notesVal,
+      cancel_code: cancelCode
+    });
   }
-  const cancelCode = `TK-${suffix}`;
-
-  if (!selectedTableForBooking.bookedSlots.includes(timeVal)) {
-    selectedTableForBooking.bookedSlots.push(timeVal);
-  }
-
-  const startDate = new Date(`${dateVal}T${timeVal}:00`);
-  const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
-
-  rest.reservations.unshift({
-    id: Date.now(),
-    guest_name: nameVal,
-    guest_phone: phoneVal,
-    guest_email: emailVal,
-    party_size: partySizeNum,
-    table_id: selectedTableForBooking.id,
-    table_number: selectedTableForBooking.name,
-    starts_at: startDate.toISOString(),
-    ends_at: endDate.toISOString(),
-    status: "confirmed",
-    notes: notesVal,
-    cancel_code: cancelCode
-  });
 
   const summaryList = document.getElementById("confirmation-summary-list");
   if (summaryList) {
     summaryList.innerHTML = `
       <li><strong>Lokal:</strong> ${rest.name}</li>
-      <li><strong>Wybrany stolik:</strong> ${selectedTableForBooking.name} (${selectedTableForBooking.seats} os. — ${selectedTableForBooking.zone})</li>
-      <li><strong>Termin:</strong> ${dateVal}, godz. ${timeVal} (okno 2h)</li>
+      <li><strong>Wybrany stolik:</strong> ${chosenTable.name} (${chosenTable.seats} os. — ${chosenTable.zone})</li>
+      <li><strong>Termin:</strong> ${dateVal}, godz. ${timeVal} (90 min)</li>
       <li><strong>Liczba gości:</strong> ${guestsVal}</li>
       <li><strong>Gość:</strong> ${nameVal} (${emailVal}, tel. ${phoneVal})</li>
       <li><strong>Uwagi:</strong> ${notesVal}</li>
@@ -558,13 +637,50 @@ function handleBookingSubmit(event) {
   }
 
   const codeEl = document.getElementById("confirmation-code");
-  if (codeEl) codeEl.textContent = `#${cancelCode}`;
+  if (codeEl) codeEl.textContent = displayCode;
 
   renderAllFloorPlans();
+  updateConfirmationStepVisibility();
 
   const confirmBox = document.getElementById("booking-confirmation");
   if (confirmBox) {
     confirmBox.classList.add("visible");
     confirmBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
+}
+
+// Anulowanie rezerwacji przez klienta przy użyciu tokena z backendu (POST /api/v1/reservations/{id}/cancel?token=...)
+async function cancelClientReservation(type) {
+  const saved = lastClientReservations[type];
+  if (!saved) return;
+
+  if (BACKEND_ONLINE && saved.token) {
+    try {
+      await apiCancelReservation(saved.id, saved.token);
+      await syncPublicTablesFromApi(currentRestaurantId);
+    } catch (err) {
+      alert(`Błąd anulowania w API: ${err.message}`);
+      return;
+    }
+  } else if (currentRestaurantId) {
+    const rest = RESTAURANTS_DATA[currentRestaurantId];
+    const r = rest.reservations.find((x) => x.id === saved.id);
+    if (r) r.status = "cancelled";
+    const tbl = rest.tables.find((t) => t.id === saved.localTableId);
+    if (tbl) {
+      if (type === "live") tbl.liveStatus = "free";
+      if (saved.slot) tbl.bookedSlots = tbl.bookedSlots.filter((s) => s !== saved.slot);
+    }
+  }
+
+  lastClientReservations[type] = null;
+  const boxId = type === "live" ? "live-booking-confirmation" : "booking-confirmation";
+  const boxEl = document.getElementById(boxId);
+  if (boxEl) boxEl.classList.remove("visible");
+
+  renderAllFloorPlans();
+  renderRestaurantsList();
+  updateLiveConfirmationStepVisibility();
+  updateConfirmationStepVisibility();
+  alert("Rezerwacja została anulowana, a stolik jest ponownie wolny.");
 }

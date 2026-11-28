@@ -36,17 +36,17 @@ function buildTableNodesHTML(tables, mode) {
         if (t.liveStatus === "free") {
           badgeText = isInspected ? "✓ W INSPEKTORZE" : "Wolny (do 1h)";
         } else if (t.liveStatus === "occupied") {
-          badgeText = `YOLO: ${t.seats_detected || t.seats}/${t.seats} os.`;
+          badgeText = "Zajęty";
         } else if (t.liveStatus === "reserved") {
-          badgeText = "Rezerwacja";
+          badgeText = "Zarezerwowany (API)";
         } else {
           badgeText = "Do sprzątania";
         }
         onClickAttr = `onclick="chooseTableForLiveBooking(${t.id})"`;
       } else if (mode === "staff") {
         statusClass = `status-${t.liveStatus}`;
-        badgeText = `${statusLabel(t.liveStatus).toUpperCase()} (${t.seats_detected || 0}/${t.seats} os.)`;
-        onClickAttr = `onclick="cycleStaffTableStatus(${t.id})" title="Kliknij, aby przełączyć status stolika"`;
+        badgeText = `${statusLabel(t.liveStatus).toUpperCase()} (${t.seats} os.)`;
+        onClickAttr = `onclick="cycleStaffTableStatus(${t.id})" title="Kliknij, aby przełączyć status stolika w API"`;
       } else {
         const isBookedOnSlot = t.bookedSlots && t.bookedSlots.includes(selectedTime);
         const isTooSmall = t.seats < requiredSeats;
@@ -96,11 +96,11 @@ function generateArchitecturalPlanHTML(tables, mode, overrideRestId = null) {
 
   let modePillHTML = "";
   if (mode === "live") {
-    modePillHTML = `<span class="arch-camera-pill"><span class="cam-pulse"></span> YOLO VISION STREAM • KLIKNIJ STOLIK</span>`;
+    modePillHTML = `<span class="arch-camera-pill">📷 KAMERA: NIEPODPIĘTA (PLACEHOLDER) • STOLIKI Z API BACKENDU</span>`;
   } else if (mode === "staff") {
-    modePillHTML = `<span class="arch-camera-pill"><span class="cam-pulse"></span> TRYB PRACOWNIKA • KLIKNIJ STOLIK, ABY ZMIENIĆ STATUS</span>`;
+    modePillHTML = `<span class="arch-camera-pill">TRYB PRACOWNIKA (API) • KLIKNIJ STOLIK, ABY ZMIENIĆ STATUS RĘCZNIE</span>`;
   } else {
-    modePillHTML = `<span class="arch-camera-pill" style="background:var(--primary);">KALENDARZ REZERWACJI • WSKAŻ ZIELONY STOLIK</span>`;
+    modePillHTML = `<span class="arch-camera-pill" style="background:var(--primary);">KALENDARZ REZERWACJI (API) • WSKAŻ ZIELONY STOLIK</span>`;
   }
 
   if (rest.layoutType === "bistro") {
@@ -211,14 +211,14 @@ function renderAllFloorPlans() {
   if (occStrip) {
     occStrip.innerHTML = `
       <span class="occ-chip free">● ${freeCount} wolnych</span>
-      <span class="occ-chip occupied">● ${occCount} zajętych (YOLO)</span>
-      <span class="occ-chip reserved">● ${resCount} zarezerwowanych</span>
+      <span class="occ-chip occupied">● ${occCount} zajętych</span>
+      <span class="occ-chip reserved">● ${resCount} zarezerwowanych (API)</span>
     `;
   }
 
   const homeFreeSummary = document.getElementById("home-restaurant-free-summary");
   if (homeFreeSummary) {
-    homeFreeSummary.textContent = `🟢 Wolne stoliki LIVE: ${freeCount} z ${activeTables.length}`;
+    homeFreeSummary.textContent = `🟢 Wolne stoliki (z API): ${freeCount} z ${activeTables.length}`;
   }
 
   const liveContainer = document.getElementById("live-floor-map-container");

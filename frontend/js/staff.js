@@ -1,6 +1,6 @@
 // ==========================================================================
 // Plik: js/staff.js — Logika Panelu Pracownika (StolikAI — wszystkie 6 zakładek)
-// oraz inicjalizacja zdarzeń DOMContentLoaded
+// połączona z autoryzacją JWT (admin / admin) i bazą danych FastAPI
 // ==========================================================================
 
 function openStaffLogin() {
@@ -8,32 +8,69 @@ function openStaffLogin() {
   if (loginSelect && currentRestaurantId) {
     loginSelect.value = currentRestaurantId;
   }
+  const errBox = document.getElementById("staff-login-error");
+  if (errBox) errBox.style.display = "none";
+
+  // Jeżeli pracownik posiada już ważny token JWT w sesji, otwórz od razu panel
+  if (isStaffAuthenticated()) {
+    const activeSelect = document.getElementById("staff-active-restaurant");
+    if (activeSelect) activeSelect.value = staffRestaurantId;
+    renderStaffPanel();
+    navigateTo("view-staff-panel");
+    return;
+  }
+
   navigateTo("view-staff-login");
 }
 
-function handleStaffLoginSubmit(event) {
+async function handleStaffLoginSubmit(event) {
   event.preventDefault();
   const loginSelect = document.getElementById("staff-login-restaurant");
+  const userEl = document.getElementById("staff-login-user");
+  const passEl = document.getElementById("staff-login-pin");
+  const errBox = document.getElementById("staff-login-error");
+  const submitBtn = document.getElementById("staff-login-submit-btn");
+
+  const username = userEl ? userEl.value.trim() : "";
+  const password = passEl ? passEl.value : "";
   staffRestaurantId = loginSelect ? loginSelect.value : "bistro-agh";
 
-  const activeSelect = document.getElementById("staff-active-restaurant");
-  if (activeSelect) activeSelect.value = staffRestaurantId;
+  if (errBox) errBox.style.display = "none";
+  if (submitBtn) submitBtn.disabled = true;
 
-  resetStaffReservationDates();
-  renderStaffPanel();
-  navigateTo("view-staff-panel");
+  try {
+    await apiLoginStaff(username, password);
+    const activeSelect = document.getElementById("staff-active-restaurant");
+    if (activeSelect) activeSelect.value = staffRestaurantId;
+
+    resetStaffReservationDates();
+    await renderStaffPanel();
+    navigateTo("view-staff-panel");
+  } catch (err) {
+    if (errBox) {
+      errBox.textContent = `✕ Błąd autoryzacji: ${err.message}`;
+      errBox.style.display = "block";
+    }
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
 }
 
-function changeStaffRestaurant(newRestId) {
+function logoutStaff() {
+  apiLogoutStaff();
+  navigateTo("view-restaurants");
+}
+
+async function changeStaffRestaurant(newRestId) {
   if (!RESTAURANTS_DATA[newRestId]) return;
   staffRestaurantId = newRestId;
   document.body.setAttribute("data-theme", staffRestaurantId);
   const brandTitleEl = document.getElementById("header-restaurant-name");
   if (brandTitleEl) brandTitleEl.textContent = `Panel Pracownika — ${RESTAURANTS_DATA[staffRestaurantId].name}`;
-  renderStaffPanel();
+  await renderStaffPanel();
 }
 
-function switchStaffTab(tabName) {
+async function switchStaffTab(tabName) {
   const subviews = document.querySelectorAll(".staff-subview");
   subviews.forEach((el) => el.classList.remove("active-subview"));
 
@@ -45,27 +82,38 @@ function switchStaffTab(tabName) {
     btn.classList.toggle("active", btn.getAttribute("data-staff-tab") === tabName);
   });
 
-  renderStaffPanel();
+  await renderStaffPanel();
 }
 
+// Ustawia domyślny termin rezerwacji w formularzu pracownika na jutro o 18:00–19:30 (zgodny z siatką 30 min w API)
 function resetStaffReservationDates() {
   const startInput = document.getElementById("st-res-start");
   const endInput = document.getElementById("st-res-end");
-  if (startInput) startInput.value = toLocalInput(Date.now() + 60 * 60 * 1000);
-  if (endInput) endInput.value = toLocalInput(Date.now() + 3 * 60 * 60 * 1000);
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(18, 0, 0, 0);
+  const end = new Date(tomorrow.getTime() + 90 * 60 * 1000);
+
+  if (startInput) startInput.value = toLocalInput(tomorrow);
+  if (endInput) endInput.value = toLocalInput(end);
 }
 
-function cycleStaffTableStatus(tableId) {
+async function cycleStaffTableStatus(tableId) {
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   const table = rest.tables.find((t) => t.id === tableId);
   if (!table) return;
 
-  const order = ["free", "occupied", "reserved", "dirty"];
-  const nextIdx = (order.indexOf(table.liveStatus) + 1) % order.length;
-  setStaffTableStatus(tableId, order[nextIdx]);
+  const order = ["free", "occupied", "dirty"];
+  const currentIdx = order.indexOf(table.liveStatus);
+  const nextStatus = order[(currentIdx + 1) % order.length];
+  await setStaffTableStatus(tableId, nextStatus);
 }
 
-function renderStaffPanel() {
+async function renderStaffPanel(skipNetworkSync = false) {
+  if (!skipNetworkSync && isStaffAuthenticated()) {
+    await syncStaffDataFromApi(staffRestaurantId);
+  }
+
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   if (!rest) return;
 
@@ -95,11 +143,11 @@ function renderStaffPanel() {
         <div class="value">${counts.free}/${counts.occupied}</div>
       </div>
       <div class="staff-stat-card">
-        <div class="label">Kamery włączone</div>
-        <div class="value">${camerasOnline}/${rest.cameras.length}</div>
+        <div class="label">Kamery podpięte</div>
+        <div class="value" style="font-size:1.3rem; color:var(--on-surface-variant);">0 (Placeholder)</div>
       </div>
       <div class="staff-stat-card">
-        <div class="label">Aktywne rezerwacje</div>
+        <div class="label">Aktywne rezerwacje (RAM API)</div>
         <div class="value">${activeReservationsCount}</div>
       </div>
     `;
@@ -116,7 +164,7 @@ function renderStaffPanel() {
       <div class="staff-list-item">
         <div>
           <strong>${t.name} (${t.seats} os.)</strong>
-          <small>${t.zone || "Bez strefy"} · wykryto: ${t.seats_detected || 0}/${t.seats} os. · pewność AI: ${Math.round((t.confidence || 0.9) * 100)}%</small>
+          <small>${t.zone || "Bez strefy"} · kamera YOLO: ${t.confidence != null ? Math.round(t.confidence * 100) + "%" : "brak źródła (—)"}</small>
         </div>
         ${statusBadgeHTML(t.liveStatus)}
       </div>
@@ -131,7 +179,7 @@ function renderStaffPanel() {
   if (upcomingEl) {
     const upcoming = rest.reservations.filter((r) => ["confirmed", "seated"].includes(r.status)).slice(0, 8);
     if (upcoming.length === 0) {
-      upcomingEl.innerHTML = `<div style="padding:12px; color:var(--text-muted);">Brak nadchodzących rezerwacji.</div>`;
+      upcomingEl.innerHTML = `<div style="padding:12px; color:var(--text-muted);">Brak rezerwacji w pamięci backendu — dodaj rezerwację jako Klient lub w zakładce Rezerwacje, aby zobaczyć przesył danych przez API.</div>`;
     } else {
       upcomingEl.innerHTML = upcoming
         .map(
@@ -151,20 +199,7 @@ function renderStaffPanel() {
 
   const dashDetectionsEl = document.getElementById("staff-dashboard-detections");
   if (dashDetectionsEl) {
-    dashDetectionsEl.innerHTML = rest.detections
-      .slice(0, 8)
-      .map(
-        (d) => `
-        <div class="staff-list-item">
-          <div>
-            <strong>${d.table_number}</strong>
-            <small>${d.seats_detected} osób · pewność ${Math.round(d.confidence * 100)}% · ${formatWhen(d.detected_at)}</small>
-          </div>
-          ${statusBadgeHTML(d.occupied ? "occupied" : "free")}
-        </div>
-      `
-      )
-      .join("");
+    dashDetectionsEl.innerHTML = `<div style="padding:12px; color:var(--text-muted); border:1px dashed var(--outline-variant); border-radius:8px;">📷 Miejsce na odczyty z kamery YOLO — moduł wizyjny nie jest jeszcze podpięty (<code>POST /api/v1/occupancy</code>).</div>`;
   }
 
   const occMapEl = document.getElementById("staff-occupancy-map");
@@ -176,15 +211,15 @@ function renderStaffPanel() {
 
   const tablesTbody = document.getElementById("staff-tables-tbody");
   if (tablesTbody) {
-    tablesTbody.innerHTML = rest.tables
+    tablesTbody.innerHTML = activeTables
       .map(
         (t) => `
         <tr>
           <td><strong>${t.name}</strong></td>
           <td>${t.zone || "—"}</td>
           <td>${t.seats} os.</td>
-          <td>${t.seats_detected || 0}</td>
-          <td>${Math.round((t.confidence || 0.9) * 100)}%</td>
+          <td style="color:var(--text-muted);">— (brak kamery)</td>
+          <td style="color:var(--text-muted);">— (brak kamery)</td>
           <td>${statusBadgeHTML(t.liveStatus)}</td>
           <td>
             <div class="staff-row-actions">
@@ -203,8 +238,8 @@ function renderStaffPanel() {
   const resTableSelect = document.getElementById("st-res-table");
   if (resTableSelect) {
     resTableSelect.innerHTML =
-      `<option value="">Automatycznie / później</option>` +
-      rest.tables
+      `<option value="">Automatycznie (najmniejszy pasujący)</option>` +
+      activeTables
         .map(
           (t) =>
             `<option value="${t.id}">${t.name} (${t.seats} os.) — ${statusLabel(t.liveStatus)}</option>`
@@ -214,36 +249,39 @@ function renderStaffPanel() {
 
   const resTbody = document.getElementById("staff-reservations-tbody");
   if (resTbody) {
-    resTbody.innerHTML = rest.reservations
-      .map(
-        (r) => `
-        <tr>
-          <td>
-            <strong>${r.guest_name}</strong>
-            <div style="color:var(--text-muted); font-size:0.8rem;">
-              ${r.guest_phone || r.guest_email || "—"} ${r.cancel_code ? `· Kod: <code>#${r.cancel_code}</code>` : ""}
-            </div>
-            ${r.notes ? `<div style="font-size:0.78rem; opacity:0.85;">Uwagi: ${r.notes}</div>` : ""}
-          </td>
-          <td>${r.table_number || "—"}</td>
-          <td>${r.party_size} os.</td>
-          <td>
-            ${formatWhen(r.starts_at)}
-            <div style="color:var(--text-muted); font-size:0.78rem;">do ${formatWhen(r.ends_at)}</div>
-          </td>
-          <td>${statusBadgeHTML(r.status)}</td>
-          <td>
-            <div class="staff-row-actions">
-              <button type="button" class="btn-sm" onclick="setStaffReservationStatus(${r.id}, 'seated')">Posadź</button>
-              <button type="button" class="btn-sm" onclick="setStaffReservationStatus(${r.id}, 'completed')">Zakończ</button>
-              <button type="button" class="btn-sm" onclick="setStaffReservationStatus(${r.id}, 'cancelled')">Anuluj</button>
-              <button type="button" class="btn-sm danger" onclick="removeStaffReservation(${r.id})">Usuń</button>
-            </div>
-          </td>
-        </tr>
-      `
-      )
-      .join("");
+    if (rest.reservations.length === 0) {
+      resTbody.innerHTML = `<tr><td colspan="6" style="color:var(--text-muted);">Brak rezerwacji dla wybranego filtra.</td></tr>`;
+    } else {
+      resTbody.innerHTML = rest.reservations
+        .map(
+          (r) => `
+          <tr>
+            <td>
+              <strong>${r.guest_name}</strong>
+              <div style="color:var(--text-muted); font-size:0.8rem;">
+                ${r.guest_phone || r.guest_email || "—"} ${r.cancel_code ? `· <code>#${r.cancel_code}</code>` : ""}
+              </div>
+              ${r.notes ? `<div style="font-size:0.78rem; opacity:0.85;">Uwagi: ${r.notes}</div>` : ""}
+            </td>
+            <td>${r.table_number || "—"}</td>
+            <td>${r.party_size} os.</td>
+            <td>
+              ${formatWhen(r.starts_at)}
+              <div style="color:var(--text-muted); font-size:0.78rem;">do ${formatWhen(r.ends_at)}</div>
+            </td>
+            <td>${statusBadgeHTML(r.status)}</td>
+            <td>
+              <div class="staff-row-actions">
+                <button type="button" class="btn-sm" onclick="setStaffReservationStatus(${r.id}, 'seated')">Posadź</button>
+                <button type="button" class="btn-sm" onclick="setStaffReservationStatus(${r.id}, 'completed')">Zakończ</button>
+                <button type="button" class="btn-sm danger" onclick="setStaffReservationStatus(${r.id}, 'cancelled')">Anuluj</button>
+              </div>
+            </td>
+          </tr>
+        `
+        )
+        .join("");
+    }
   }
 
   const camTbody = document.getElementById("staff-cameras-tbody");
@@ -276,27 +314,14 @@ function renderStaffPanel() {
 
   const detTbody = document.getElementById("staff-detections-tbody");
   if (detTbody) {
-    detTbody.innerHTML = rest.detections
-      .map(
-        (d) => `
-        <tr>
-          <td>${formatWhen(d.detected_at)}</td>
-          <td><strong>${d.table_number}</strong></td>
-          <td>${d.seats_detected} os.</td>
-          <td>${Math.round(d.confidence * 100)}%</td>
-          <td>${statusBadgeHTML(d.occupied ? "occupied" : "free")}</td>
-          <td>Kamera #${d.camera_id || 1}</td>
-        </tr>
-      `
-      )
-      .join("");
+    detTbody.innerHTML = `<tr><td colspan="6" style="color:var(--text-muted); text-align:center; padding:18px;">Brak podpiętej kamery — oczekiwanie na integrację modułu wizyjnego z endpointem <code>POST /api/v1/occupancy</code>.</td></tr>`;
   }
 
   renderAllFloorPlans();
   renderRestaurantsList();
 }
 
-function handleStaffCreateTable(event) {
+async function handleStaffCreateTable(event) {
   event.preventDefault();
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   const nameVal = document.getElementById("st-table-number").value.trim();
@@ -305,6 +330,25 @@ function handleStaffCreateTable(event) {
   const statusVal = document.getElementById("st-table-status").value;
   const posX = parseInt(document.getElementById("st-table-posx").value, 10) || 50;
   const posY = parseInt(document.getElementById("st-table-posy").value, 10) || 50;
+
+  if (BACKEND_ONLINE && isStaffAuthenticated()) {
+    try {
+      const created = await apiCreateTable(staffRestaurantId, nameVal, capVal, zoneVal);
+      if (statusVal === "occupied") {
+        await apiSendStaffOccupancy("staff-panel", [
+          { table_id: created.id, occupied: true, confidence: 1.0 }
+        ]);
+      } else if (statusVal === "dirty") {
+        _dirtyTablesLocal.add(created.id);
+      }
+      document.getElementById("st-table-number").value = "";
+      await renderStaffPanel();
+      return;
+    } catch (err) {
+      alert(`Błąd dodawania stolika w API: ${err.message}`);
+      return;
+    }
+  }
 
   const nextId = rest.tables.reduce((max, t) => Math.max(max, t.id), 0) + 1;
   rest.tables.push({
@@ -323,10 +367,31 @@ function handleStaffCreateTable(event) {
   });
 
   document.getElementById("st-table-number").value = "";
-  renderStaffPanel();
+  await renderStaffPanel(true);
 }
 
-function setStaffTableStatus(tableId, newStatus) {
+async function setStaffTableStatus(tableId, newStatus) {
+  if (BACKEND_ONLINE && isStaffAuthenticated()) {
+    try {
+      if (newStatus === "dirty") {
+        _dirtyTablesLocal.add(tableId);
+        await apiSendStaffOccupancy("staff-panel", [
+          { table_id: tableId, occupied: false, confidence: 1.0 }
+        ]);
+      } else {
+        _dirtyTablesLocal.delete(tableId);
+        await apiSendStaffOccupancy("staff-panel", [
+          { table_id: tableId, occupied: newStatus === "occupied", confidence: 1.0 }
+        ]);
+      }
+      await renderStaffPanel();
+      return;
+    } catch (err) {
+      alert(`Błąd aktualizacji statusu stolika w API: ${err.message}`);
+      return;
+    }
+  }
+
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   const table = rest.tables.find((t) => t.id === tableId);
   if (!table) return;
@@ -346,35 +411,72 @@ function setStaffTableStatus(tableId, newStatus) {
     table.seats_detected = 0;
   }
 
-  renderStaffPanel();
+  await renderStaffPanel(true);
 }
 
-function removeStaffTable(tableId) {
+async function removeStaffTable(tableId) {
   if (!confirm("Usunąć stolik?")) return;
+
+  if (BACKEND_ONLINE && isStaffAuthenticated()) {
+    try {
+      await apiDeleteTable(tableId);
+      await renderStaffPanel();
+      return;
+    } catch (err) {
+      alert(`Błąd usuwania stolika w API: ${err.message}`);
+      return;
+    }
+  }
+
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   rest.tables = rest.tables.filter((t) => t.id !== tableId);
-  renderStaffPanel();
+  await renderStaffPanel(true);
 }
 
-function handleStaffCreateReservation(event) {
+async function handleStaffCreateReservation(event) {
   event.preventDefault();
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   const guestName = document.getElementById("st-res-guest").value.trim();
   const guestPhone = document.getElementById("st-res-phone").value.trim();
-  const guestEmail = document.getElementById("st-res-email").value.trim();
+  const guestEmail = document.getElementById("st-res-email").value.trim() || "rezerwacja@lokal.pl";
   const partySize = parseInt(document.getElementById("st-res-party").value, 10) || 2;
   const tableIdVal = document.getElementById("st-res-table").value;
   const startsAt = document.getElementById("st-res-start").value;
   const endsAt = document.getElementById("st-res-end").value;
   const notes = document.getElementById("st-res-notes").value.trim();
 
-  const tableObj = tableIdVal ? rest.tables.find((t) => t.id === Number(tableIdVal)) : null;
+  if (BACKEND_ONLINE && isStaffAuthenticated()) {
+    try {
+      const startDateObj = new Date(startsAt);
+      await apiCreateReservation({
+        restaurant_id: staffRestaurantId,
+        table_id: tableIdVal ? Number(tableIdVal) : null,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone || null,
+        party_size: partySize,
+        starts_at: startDateObj.toISOString(),
+        notes: notes || null,
+        express_live: false
+      });
 
+      document.getElementById("st-res-guest").value = "";
+      document.getElementById("st-res-phone").value = "";
+      document.getElementById("st-res-email").value = "";
+      document.getElementById("st-res-notes").value = "";
+      resetStaffReservationDates();
+      await renderStaffPanel();
+      return;
+    } catch (err) {
+      alert(`Nie udało się dodać rezerwacji w API:\n${err.message}`);
+      return;
+    }
+  }
+
+  const tableObj = tableIdVal ? rest.tables.find((t) => t.id === Number(tableIdVal)) : null;
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let suffix = "";
-  for (let i = 0; i < 4; i++) {
-    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
+  for (let i = 0; i < 4; i++) suffix += chars.charAt(Math.floor(Math.random() * chars.length));
   const cancelCode = `TK-${suffix}`;
 
   rest.reservations.unshift({
@@ -402,10 +504,25 @@ function handleStaffCreateReservation(event) {
   document.getElementById("st-res-email").value = "";
   document.getElementById("st-res-notes").value = "";
   resetStaffReservationDates();
-  renderStaffPanel();
+  await renderStaffPanel(true);
 }
 
-function setStaffReservationStatus(resId, newStatus) {
+async function setStaffReservationStatus(resId, newStatus) {
+  if (BACKEND_ONLINE && isStaffAuthenticated()) {
+    try {
+      if (newStatus === "cancelled") {
+        await apiCancelReservation(resId, null);
+      } else {
+        await apiUpdateReservationStatus(resId, newStatus);
+      }
+      await renderStaffPanel();
+      return;
+    } catch (err) {
+      alert(`Błąd zmiany statusu rezerwacji w API: ${err.message}`);
+      return;
+    }
+  }
+
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   const res = rest.reservations.find((r) => r.id === resId);
   if (!res) return;
@@ -426,14 +543,7 @@ function setStaffReservationStatus(resId, newStatus) {
     }
   }
 
-  renderStaffPanel();
-}
-
-function removeStaffReservation(resId) {
-  if (!confirm("Usunąć rezerwację?")) return;
-  const rest = RESTAURANTS_DATA[staffRestaurantId];
-  rest.reservations = rest.reservations.filter((r) => r.id !== resId);
-  renderStaffPanel();
+  await renderStaffPanel(true);
 }
 
 function handleStaffCreateCamera(event) {
@@ -458,7 +568,7 @@ function handleStaffCreateCamera(event) {
 
   document.getElementById("st-cam-name").value = "";
   document.getElementById("st-cam-url").value = "";
-  renderStaffPanel();
+  renderStaffPanel(true);
 }
 
 function toggleStaffCameraModel(camId) {
@@ -466,7 +576,7 @@ function toggleStaffCameraModel(camId) {
   const cam = rest.cameras.find((c) => c.id === camId);
   if (!cam) return;
   cam.model_enabled = !cam.model_enabled;
-  renderStaffPanel();
+  renderStaffPanel(true);
 }
 
 function setStaffCameraStatus(camId, newStatus) {
@@ -475,24 +585,39 @@ function setStaffCameraStatus(camId, newStatus) {
   if (!cam) return;
   cam.status = newStatus;
   cam.last_heartbeat = new Date().toISOString();
-  renderStaffPanel();
+  renderStaffPanel(true);
 }
 
 function removeStaffCamera(camId) {
   if (!confirm("Usunąć kamerę?")) return;
   const rest = RESTAURANTS_DATA[staffRestaurantId];
   rest.cameras = rest.cameras.filter((c) => c.id !== camId);
-  renderStaffPanel();
+  renderStaffPanel(true);
 }
 
-function simulateNewDetection() {
+async function simulateNewDetection() {
   const rest = RESTAURANTS_DATA[staffRestaurantId];
-  if (!rest.tables.length) return;
-  const randomTable = rest.tables[Math.floor(Math.random() * rest.tables.length)];
+  const activeTables = rest.tables.filter((t) => t.is_active !== false);
+  if (!activeTables.length) return;
+
+  const randomTable = activeTables[Math.floor(Math.random() * activeTables.length)];
   const isNowOccupied = randomTable.liveStatus !== "occupied";
-  const detectedSeats = isNowOccupied ? Math.max(1, Math.floor(Math.random() * randomTable.seats) + 1) : 0;
   const conf = Number((0.86 + Math.random() * 0.12).toFixed(2));
 
+  if (BACKEND_ONLINE && isStaffAuthenticated()) {
+    try {
+      await apiSendStaffOccupancy("yolo-cam-1", [
+        { table_id: randomTable.id, occupied: isNowOccupied, confidence: conf }
+      ]);
+      await renderStaffPanel();
+      return;
+    } catch (err) {
+      alert(`Błąd zapisu detekcji w API: ${err.message}`);
+      return;
+    }
+  }
+
+  const detectedSeats = isNowOccupied ? Math.max(1, Math.floor(Math.random() * randomTable.seats) + 1) : 0;
   randomTable.liveStatus = isNowOccupied ? "occupied" : "free";
   randomTable.liveLabel = isNowOccupied ? `Zajęty (YOLO: ${detectedSeats} os.)` : "Wolny — Kliknij";
   randomTable.seats_detected = detectedSeats;
@@ -509,12 +634,19 @@ function simulateNewDetection() {
     detected_at: new Date().toISOString()
   });
 
-  renderStaffPanel();
+  await renderStaffPanel(true);
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   document.body.setAttribute("data-theme", "hub");
-  renderRestaurantsList();
+
+  // Ustawienie domyślnej daty rezerwacji na jutro (aby uniknąć błędu "Termin musi być w przyszłości" w API)
+  const bookingDateEl = document.getElementById("booking-date");
+  if (bookingDateEl) {
+    bookingDateEl.min = getTodayDateStr();
+    bookingDateEl.value = getTomorrowDateStr();
+  }
+
   resetStaffReservationDates();
 
   const liveForm = document.getElementById("live-reservation-form");
@@ -526,4 +658,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (bookingForm) {
     bookingForm.addEventListener("submit", handleBookingSubmit);
   }
+
+  await syncPublicTablesFromApi();
+  renderRestaurantsList();
+  startBackendPolling();
 });
