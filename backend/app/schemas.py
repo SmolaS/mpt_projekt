@@ -23,17 +23,22 @@ class TokenOut(BaseModel):
 
 
 class ReservationCreate(BaseModel):
+    restaurant_id: str = Field(default="bistro-agh", max_length=50)
+    table_id: int | None = None
     guest_name: str = Field(min_length=1, max_length=100)
     guest_email: EmailStr
     guest_phone: str | None = Field(default=None, max_length=30)
     party_size: int = Field(ge=1, le=20)
     starts_at: AwareDatetime  # wymagana strefa, np. 2026-11-20T18:00:00+01:00
+    notes: str | None = Field(default=None, max_length=255)
+    express_live: bool = False
 
 
 class ReservationOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    restaurant_id: str = "bistro-agh"
     table_id: int
     table_name: str
     guest_name: str
@@ -43,10 +48,15 @@ class ReservationOut(BaseModel):
     starts_at: UtcDatetime
     ends_at: UtcDatetime
     status: str
+    notes: str | None = None
 
 
 class ReservationCreated(ReservationOut):
     cancel_token: str
+
+
+class ReservationStatusUpdate(BaseModel):
+    status: Literal["confirmed", "seated", "completed", "cancelled", "no_show"]
 
 
 class AvailabilityOut(BaseModel):
@@ -58,14 +68,18 @@ class AvailabilityOut(BaseModel):
 class TableIn(BaseModel):
     name: str = Field(min_length=1, max_length=50)
     seats: int = Field(ge=1, le=20)
+    restaurant_id: str = Field(default="bistro-agh", max_length=50)
+    zone: str = Field(default="Sala główna", max_length=80)
 
 
 class TableOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    restaurant_id: str
     name: str
     seats: int
+    zone: str
     is_active: bool
 
 
@@ -82,9 +96,26 @@ class OccupancyBatch(BaseModel):
 
 class TableStatusOut(BaseModel):
     id: int
+    restaurant_id: str = "bistro-agh"
     name: str
     seats: int
+    zone: str = "Sala główna"
     state: Literal["free", "reserved", "occupied", "unknown"]
     reserved: bool
     occupied: bool | None
+    confidence: float | None = None
+    camera_id: str | None = None
     occupancy_updated_at: UtcDatetime | None
+    booked_for_slot: bool = False
+
+
+class DetectionOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    table_id: int
+    table_name: str
+    camera_id: str | None
+    occupied: bool
+    confidence: float | None
+    detected_at: UtcDatetime
