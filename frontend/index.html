@@ -18,7 +18,7 @@
         <div class="brand-icon-box" aria-hidden="true">🍽️</div>
         <div>
           <div class="brand-title" id="header-restaurant-name">Trackujemy Stoły — Wybór Restauracji</div>
-          <div class="brand-subtitle">Kraków • Gastronomia &amp; Computer Vision (LIVE YOLO)</div>
+          <div class="brand-subtitle">Kraków • Integracja Frontend ↔ Backend REST API (FastAPI)</div>
         </div>
       </div>
 
@@ -57,10 +57,14 @@
       <div class="stitch-hero">
         <div class="stitch-hero-top">
           <span class="stitch-breadcrumb">📍 Małopolska / Kraków / Wybór Lokalu</span>
-          <span class="telemetry-live-pill">
-            <span class="pulse-dot"></span>
-            Kamera YOLO Aktywna • 60 FPS
-          </span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <span class="telemetry-live-pill api-connection-indicator">
+              Sprawdzanie połączenia z Backendem...
+            </span>
+            <span class="telemetry-live-pill" style="background:var(--surface-container-high); color:var(--on-surface-variant); border:1px dashed var(--outline);">
+              📷 Kamera YOLO: Niepodpięta (Placeholder)
+            </span>
+          </div>
         </div>
 
         <div class="stitch-hero-grid">
@@ -146,9 +150,8 @@
         <button type="button" class="btn-secondary" onclick="navigateTo('view-restaurants')">
           &larr; Zmień restaurację (Lista lokali)
         </button>
-        <span class="telemetry-live-pill" id="home-live-pill">
-          <span class="pulse-dot"></span>
-          Detekcja YOLO aktywna
+        <span class="telemetry-live-pill api-connection-indicator" id="home-live-pill">
+          Sprawdzanie połączenia z API...
         </span>
       </div>
 
@@ -306,11 +309,22 @@
 
       <div class="stitch-section-header">
         <div>
-          <div class="rest-cuisine-overline">Wizja Komputerowa YOLO • Podgląd w czasie rzeczywistym</div>
-          <h2 id="live-floor-heading">Rezerwacja LIVE — Aktualny stan sali (blokada do 1h)</h2>
+          <div class="rest-cuisine-overline">Rzut Sali z Backendu FastAPI • Miejsce pod moduł wizyjny</div>
+          <h2 id="live-floor-heading">Rezerwacja LIVE — Plan sali (blokada do 1h)</h2>
         </div>
         <div class="stitch-occupancy-strip" id="live-occupancy-pills">
-          <!-- Dynamicznie uzupełniane: X wolnych, Y zajętych, Z zarezerwowanych -->
+          <!-- Dynamicznie uzupełniane z API -->
+        </div>
+      </div>
+
+      <!-- PUSTE MIEJSCE (PLACEHOLDER) NA MODUŁ KAMERY YOLO -->
+      <div class="camera-placeholder-box" role="region" aria-label="Miejsce na moduł kamery">
+        <div class="cam-ph-icon">📷</div>
+        <div>
+          <div class="cam-ph-title">[ MIEJSCE NA MODUŁ KAMERY YOLO — BRAK PODPIĘTEGO ŹRÓDŁA OBRAZU ]</div>
+          <div class="cam-ph-desc">
+            Moduł kamery wizyjnej nie jest jeszcze podłączony na tym etapie projektu. Układ stolików oraz blokady rezerwacji poniżej pobierane są na żywo z backendu FastAPI (<code>GET /api/v1/public/tables</code>, pamięć tymczasowa RAM), a endpoint odbiorczy <code>POST /api/v1/occupancy</code> czeka na podpięcie kamery.
+          </div>
         </div>
       </div>
 
@@ -426,10 +440,13 @@
           <div class="confirmation-box" id="live-booking-confirmation" role="status" aria-live="polite">
             <h4>✓ Stolik zablokowany (LIVE)</h4>
             <ul class="confirmation-details" id="live-confirmation-summary-list"></ul>
-            <div>
-              Kod rezerwacji:
+            <div style="margin-bottom: 10px;">
+              Kod / Token rezerwacji:
               <span class="code-badge" id="live-confirmation-code">------</span>
             </div>
+            <button type="button" class="btn-secondary" id="live-cancel-booking-btn" style="width:100%; font-size:0.8rem;" onclick="cancelClientReservation('live')">
+              ✕ Anuluj tę rezerwację
+            </button>
           </div>
         </aside>
       </div>
@@ -469,16 +486,25 @@
       <div class="filter-strip">
         <div class="form-group" style="margin-bottom:0;">
           <label for="booking-date">Krok 1: Data wizyty *</label>
-          <input type="date" id="booking-date" name="date" value="2026-11-05" onchange="updateBookingFloorFilter()" required />
+          <input type="date" id="booking-date" name="date" onchange="updateBookingFloorFilter()" required />
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
-          <label for="booking-time">Krok 2: Okno czasowe (2h) *</label>
+          <label for="booking-time">Krok 2: Godzina (rezerwacja 90 min) *</label>
           <select id="booking-time" name="time" onchange="updateBookingFloorFilter()" required>
-            <option value="17:00">17:00 – 19:00</option>
-            <option value="18:00" selected>18:00 – 20:00</option>
-            <option value="19:00">19:00 – 21:00</option>
-            <option value="20:00">20:00 – 22:00</option>
+            <option value="12:00">12:00 – 13:30</option>
+            <option value="13:00">13:00 – 14:30</option>
+            <option value="14:00">14:00 – 15:30</option>
+            <option value="15:00">15:00 – 16:30</option>
+            <option value="16:00">16:00 – 17:30</option>
+            <option value="17:00">17:00 – 18:30</option>
+            <option value="17:30">17:30 – 19:00</option>
+            <option value="18:00" selected>18:00 – 19:30</option>
+            <option value="18:30">18:30 – 20:00</option>
+            <option value="19:00">19:00 – 20:30</option>
+            <option value="19:30">19:30 – 21:00</option>
+            <option value="20:00">20:00 – 21:30</option>
+            <option value="20:30">20:30 – 22:00</option>
           </select>
         </div>
 
@@ -563,10 +589,13 @@
             <span class="staff-badge free">POTWIERDZONA</span>
           </div>
           <ul class="confirmation-details" id="confirmation-summary-list"></ul>
-          <div>
+          <div style="margin-bottom: 12px;">
             Kod anulowania / zarządzania:
             <span class="code-badge" id="confirmation-code">------</span>
           </div>
+          <button type="button" class="btn-secondary" id="calendar-cancel-booking-btn" style="font-size:0.82rem;" onclick="cancelClientReservation('calendar')">
+            ✕ Anuluj tę rezerwację (POST /reservations/{id}/cancel)
+          </button>
         </div>
       </div>
     </section>
@@ -582,11 +611,13 @@
       </div>
 
       <div class="staff-login-card">
-        <div class="rest-cuisine-overline">System Zarządzania Salą &amp; Kamerami YOLO</div>
+        <div class="rest-cuisine-overline">Autoryzacja JWT • POST /api/v1/auth/login</div>
         <h2 id="staff-login-heading">🔒 Logowanie Pracownika (StolikAI)</h2>
         <p>
-          Wybierz lokal gastronomiczny i kliknij przycisk logowania (w wersji demonstracyjnej autoryzacja przenosi bezpośrednio do panelu operacyjnego).
+          Zaloguj się danymi pracownika (domyślnie: login <code>admin</code>, hasło <code>admin</code>), aby pobrać token JWT i zarządzać lokalem.
         </p>
+
+        <div id="staff-login-error" style="display:none; margin-bottom:14px; padding:10px 12px; border-radius:8px; background:var(--occupied-bg); color:var(--occupied-text); border:1px solid #fda4af; font-size:0.86rem; font-weight:600;"></div>
 
         <form onsubmit="handleStaffLoginSubmit(event)">
           <div class="form-group">
@@ -599,16 +630,16 @@
           </div>
 
           <div class="form-group">
-            <label for="staff-login-user">Identyfikator pracownika / Rola</label>
-            <input type="text" id="staff-login-user" value="manager@stolikai.pl (Kierownik Sali)" />
+            <label for="staff-login-user">Login pracownika *</label>
+            <input type="text" id="staff-login-user" value="admin" placeholder="admin" autocomplete="username" required />
           </div>
 
           <div class="form-group">
-            <label for="staff-login-pin">Kod PIN / Hasło (Demo)</label>
-            <input type="password" id="staff-login-pin" value="admin123" />
+            <label for="staff-login-pin">Hasło *</label>
+            <input type="password" id="staff-login-pin" value="admin" placeholder="admin" autocomplete="current-password" required />
           </div>
 
-          <button type="submit" class="btn-primary" style="width: 100%; margin-top: 8px;">
+          <button type="submit" class="btn-primary" id="staff-login-submit-btn" style="width: 100%; margin-top: 8px;">
             Zaloguj i otwórz Panel Pracownika &rarr;
           </button>
         </form>
@@ -662,7 +693,7 @@
             Model AI rozpoznaje zajętość stolików z kamer. Panel pozwala zarządzać salą, rezerwacjami i źródłami wideo.
           </div>
 
-          <button type="button" class="btn-secondary" style="width: 100%;" onclick="navigateTo('view-restaurants')">
+          <button type="button" class="btn-secondary" style="width: 100%;" onclick="logoutStaff()">
             &larr; Wyloguj do Panelu Klienta
           </button>
         </aside>
@@ -675,11 +706,21 @@
             <div class="staff-page-header">
               <div>
                 <h1>Pulpit operacyjny</h1>
-                <p>Podgląd zajętości, kamer i najbliższych rezerwacji w czasie rzeczywistym.</p>
+                <p>Dane synchronizowane przez REST API z backendem FastAPI (tymczasowa pamięć RAM serwera, bez trwałej bazy <code>.db</code>).</p>
               </div>
               <button type="button" class="btn-secondary" onclick="renderStaffPanel()">
-                Odśwież dane
+                Odśwież z API
               </button>
+            </div>
+
+            <div class="camera-placeholder-box">
+              <div class="cam-ph-icon">🔌</div>
+              <div>
+                <div class="cam-ph-title">STATUS ARCHITEKTURY: FRONTEND ↔ BACKEND POŁĄCZONY • BAZA I KAMERA W PRZYGOTOWANIU</div>
+                <div class="cam-ph-desc">
+                  Autoryzacja JWT (<code>POST /api/v1/auth/login</code>), stoliki (<code>/api/v1/tables</code>) i rezerwacje (<code>/api/v1/reservations</code>) przechodzą przez serwer FastAPI. Dane trzymane są tymczasowo w pamięci RAM backendu, a miejsce pod moduł kamery oczekuje na podpięcie.
+                </div>
+              </div>
             </div>
 
             <div class="staff-grid-stats" id="staff-dashboard-stats"></div>
@@ -805,7 +846,13 @@
             <div class="staff-page-header">
               <div>
                 <h1>Rezerwacje</h1>
-                <p>Zarządzanie rezerwacjami na podstawie dostępności stolików (wspólna baza z Panelem Klienta).</p>
+                <p>Zarządzanie rezerwacjami z bazy danych API (wspólna baza z Panelem Klienta).</p>
+              </div>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <input type="date" id="staff-res-filter-date" onchange="renderStaffPanel()" style="padding:7px 10px; border:1px solid var(--outline-variant); border-radius:8px; background:#fff;" title="Filtruj po dacie" />
+                <button type="button" class="btn-secondary" onclick="document.getElementById('staff-res-filter-date').value=''; renderStaffPanel();">
+                  Wszystkie daty
+                </button>
               </div>
             </div>
 
@@ -864,79 +911,48 @@
             </div>
           </div>
 
-          <!-- ZAKŁADKA 5: KAMERY (CamerasPage) -->
+          <!-- ZAKŁADKA 5: KAMERY (Placeholder pod przyszłą integrację) -->
           <div id="staff-tab-cameras" class="staff-subview">
             <div class="staff-page-header">
               <div>
-                <h1>Kamery</h1>
-                <p>Źródła wideo oraz przełączniki modelu rozpoznającego zajętość.</p>
+                <h1>Kamery (Miejsce pod integrację)</h1>
+                <p>Sekcja przygotowana pod podłączenie modułu wizyjnego w kolejnym etapie projektu.</p>
               </div>
             </div>
 
-            <form class="staff-form-grid" onsubmit="handleStaffCreateCamera(event)">
-              <div class="staff-field">
-                <label for="st-cam-name">Nazwa *</label>
-                <input type="text" id="st-cam-name" placeholder="np. Kamera sala 3" required />
+            <div class="camera-placeholder-box" style="padding: 32px;">
+              <div class="cam-ph-icon" style="width:64px; height:64px; font-size:2rem;">📷</div>
+              <div>
+                <div class="cam-ph-title" style="font-size:0.9rem;">[ PUSTE MIEJSCE NA MODUŁ KAMERY WIZYJNEJ YOLO ]</div>
+                <div class="cam-ph-desc" style="margin-top:6px;">
+                  W aktualnej wersji demonstrowane jest połączenie <strong>Frontend ↔ Backend FastAPI</strong> bez podpiętej kamery oraz bez docelowej bazy danych.<br />
+                  Po stronie backendu przygotowany jest już chroniony kluczem endpoint <code>POST /api/v1/occupancy</code>, do którego moduł kamery będzie wysyłał statusy zajętości stolików.
+                </div>
               </div>
-              <div class="staff-field">
-                <label for="st-cam-url">Adres strumienia</label>
-                <input type="text" id="st-cam-url" placeholder="rtsp://192.168.1.15/stream1" />
-              </div>
-              <div class="staff-field">
-                <label for="st-cam-zone">Strefa</label>
-                <input type="text" id="st-cam-zone" placeholder="np. Sala główna" value="Sala główna" />
-              </div>
-              <div class="staff-field">
-                <label for="st-cam-status">Stan</label>
-                <select id="st-cam-status">
-                  <option value="online">włączona</option>
-                  <option value="offline">wyłączona</option>
-                  <option value="error">błąd</option>
-                </select>
-              </div>
-              <div class="staff-field" style="justify-content: flex-end;">
-                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin-top: 22px;">
-                  <input type="checkbox" id="st-cam-model" checked style="width:auto;" />
-                  Model AI włączony
-                </label>
-              </div>
-              <div class="staff-field wide">
-                <button type="submit" class="btn-primary">Dodaj kamerę</button>
-              </div>
-            </form>
-
-            <div class="staff-table-wrap">
-              <table class="staff-data">
-                <thead>
-                  <tr>
-                    <th>Nazwa</th>
-                    <th>Strefa</th>
-                    <th>Strumień</th>
-                    <th>Model AI</th>
-                    <th>Stan</th>
-                    <th>Ostatni sygnał</th>
-                    <th>Akcje</th>
-                  </tr>
-                </thead>
-                <tbody id="staff-cameras-tbody"></tbody>
-              </table>
             </div>
           </div>
 
-          <!-- ZAKŁADKA 6: HISTORIA DETEKCJI (DetectionsPage) -->
+          <!-- ZAKŁADKA 6: HISTORIA DETEKCJI (Placeholder pod przyszłą integrację) -->
           <div id="staff-tab-detections" class="staff-subview">
             <div class="staff-page-header">
               <div>
                 <h1>Historia detekcji</h1>
-                <p>Zdarzenia z modelu AI rozpoznającego zajętość stolików.</p>
+                <p>Rejestr zdarzeń z modułu kamery (obecnie pusty — brak podpiętej kamery).</p>
               </div>
               <div style="display:flex; gap:8px;">
-                <button type="button" class="btn-primary" onclick="simulateNewDetection()">
-                  + Symuluj odczyt YOLO
-                </button>
                 <button type="button" class="btn-secondary" onclick="renderStaffPanel()">
-                  Odśwież
+                  Sprawdź API (/api/v1/detections)
                 </button>
+              </div>
+            </div>
+
+            <div class="camera-placeholder-box">
+              <div class="cam-ph-icon">🧠</div>
+              <div>
+                <div class="cam-ph-title">BRAK PODPIĘTEGO ŹRÓDŁA KAMERY — 0 ODCZYTÓW W PAMIĘCI BACKENDU</div>
+                <div class="cam-ph-desc">
+                  Tabela poniżej pobiera dane z endpointu <code>GET /api/v1/detections</code>, ale pozostaje pusta do czasu podłączenia zewnętrznego modułu kamery YOLO.
+                </div>
               </div>
             </div>
 
@@ -964,10 +980,12 @@
   </main>
 
   <footer class="stitch-footer">
-    Trackujemy Stoły &amp; StolikAI • System Rezerwacji Stolików z Wizją Komputerową YOLO • Projekt AGH (100% Lokalny SPA)
+    Trackujemy Stoły &amp; StolikAI • System Rezerwacji Stolików z Wizją Komputerową YOLO • Projekt AGH (FastAPI + SPA)
+    &nbsp;•&nbsp; <span class="api-connection-indicator" style="padding:3px 9px; border-radius:999px; font-family:var(--font-mono); font-size:0.72rem; font-weight:700;">Sprawdzanie API...</span>
   </footer>
 
   <script src="js/data.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/floorplan.js"></script>
   <script src="js/client.js"></script>
   <script src="js/staff.js"></script>
